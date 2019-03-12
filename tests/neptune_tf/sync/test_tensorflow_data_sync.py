@@ -46,7 +46,7 @@ class TensorflowDataSyncTest(unittest.TestCase):
         step = 0
         for summary in summaries:
             # pylint: disable=protected-access
-            TensorflowDataSync._apply_limit(self._EXPERIMENT, step, summary, tag_buckets, tf)
+            TensorflowDataSync._apply_limit(self._EXPERIMENT, step, summary, tag_buckets)
             step += 1
 
         # THEN
@@ -70,7 +70,7 @@ class TensorflowDataSyncTest(unittest.TestCase):
         step = 0
         for summary in summaries:
             # pylint: disable=protected-access
-            TensorflowDataSync._apply_limit(self._EXPERIMENT, step, summary, tag_buckets, tf)
+            TensorflowDataSync._apply_limit(self._EXPERIMENT, step, summary, tag_buckets)
             step += 1
 
         # THEN
@@ -93,7 +93,7 @@ class TensorflowDataSyncTest(unittest.TestCase):
         step = 0
         for summary in summaries:
             # pylint: disable=protected-access
-            TensorflowDataSync._apply_limit(self._EXPERIMENT, step, summary, tag_buckets, tf)
+            TensorflowDataSync._apply_limit(self._EXPERIMENT, step, summary, tag_buckets)
             step += 1
 
         # THEN

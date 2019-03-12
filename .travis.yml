@@ -5,12 +5,10 @@ python:
   - '3.5'
   - '3.6'
 install:
-  - pip install -r requirements.txt
-  - pip install -r test_requirements.txt
+  - make prepare
   - pip install tox-travis
 script:
-  - python -m pylint -j 0 -f parseable neptune_tf tests
-  - tox
+  - make tests
 deploy:
   distributions: git_version sdist
   provider: pypi

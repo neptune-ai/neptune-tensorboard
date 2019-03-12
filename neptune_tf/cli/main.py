@@ -16,7 +16,7 @@
 import os
 
 import click
-from neptune import Session
+import neptune
 
 from neptune_tf.sync import TensorflowDataSync
 
@@ -28,21 +28,16 @@ def main():
 
 @main.command('sync')
 @click.option('--api-token', '-a', help='Neptune Authorization Token')
-@click.option('--project', '-p', required=True, help='Project name')
+@click.option('--project', '-p', help='Project name')
 @click.argument('path', required=True)
 def sync(api_token, project, path):
-    session = Session(api_token)
-    project = session.get_project(project)
-
-    if not TensorflowDataSync.requirements_installed():
-        click.echo("ERROR: Package `tensorflow` is missing", err=True)
-        return
+    neptune.init(api_token=api_token, project_qualified_name=project)
 
     if not os.path.exists(path):
         click.echo("ERROR: Provided path doesn't exist", err=True)
         return
 
-    loader = TensorflowDataSync(project, path)
+    loader = TensorflowDataSync(neptune.project, path)
     loader.run()
 
 

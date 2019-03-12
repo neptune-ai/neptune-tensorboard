@@ -20,9 +20,11 @@ import os
 import time
 import uuid
 
+import tensorflow as tf
 from PIL import Image
 from future.builtins import object, str
-from neptune.exceptions import LibraryNotInstalled, NeptuneException
+from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
+from neptune.exceptions import NeptuneException
 
 _integrated_with_tensorflow = False
 
@@ -45,9 +47,6 @@ class TensorflowIntegrator(object):
 
     def add_summary(self, summary_writer, summary, global_step=None):
 
-        from tensorflow.core.framework import summary_pb2  # pylint:disable=import-error,no-name-in-module
-        import tensorflow as tf
-
         if isinstance(summary, bytes):
             summ = summary_pb2.Summary()
             summ.ParseFromString(summary)
@@ -56,11 +55,11 @@ class TensorflowIntegrator(object):
         x = self._calculate_x_value(global_step)
         for value in summary.value:
             try:
-                self.add_value(summary_writer.get_logdir(), x, value, tf)
+                self.add_value(summary_writer.get_logdir(), x, value)
             except NeptuneException:
                 pass
 
-    def add_value(self, log_dir, x, value, tf):
+    def add_value(self, log_dir, x, value):
         field = value.WhichOneof('value')
 
         if field == 'simple_value':
@@ -120,17 +119,12 @@ class TensorflowIntegrator(object):
 
 
 def _integrate_with_tensorflow(experiment_getter):
-    try:
-        import tensorflow
-    except ImportError:
-        raise LibraryNotInstalled('tensorflow')
-
     tensorflow_integrator = TensorflowIntegrator(experiment_getter=experiment_getter)
 
     # pylint: disable=no-member, protected-access, no-name-in-module, import-error
 
-    _add_summary_method = tensorflow.summary.FileWriter.add_summary
-    _add_graph_def_method = tensorflow.summary.FileWriter._add_graph_def
+    _add_summary_method = tf.summary.FileWriter.add_summary
+    _add_graph_def_method = tf.summary.FileWriter._add_graph_def
 
     def _neptune_add_summary(summary_writer, summary, global_step=None):
         tensorflow_integrator.add_summary(summary_writer, summary, global_step)
@@ -139,7 +133,7 @@ def _integrate_with_tensorflow(experiment_getter):
     def _neptune_add_graph_def(summary_writer, graph_def, global_step=None):
 
         try:
-            from tensorflow.tensorboard.backend import process_graph
+            from tf.tensorboard.backend import process_graph
         except ImportError:
             from tensorboard.backend import process_graph
 
@@ -149,7 +143,7 @@ def _integrate_with_tensorflow(experiment_getter):
         tensorflow_integrator.add_graph_def(graph_def, summary_writer.get_logdir())
         _add_graph_def_method(summary_writer, graph_def, global_step=global_step)
 
-    tensorflow.summary.FileWriter.add_summary = _neptune_add_summary
-    tensorflow.summary.FileWriter._add_graph_def = _neptune_add_graph_def
+    tf.summary.FileWriter.add_summary = _neptune_add_summary
+    tf.summary.FileWriter._add_graph_def = _neptune_add_graph_def
 
     return tensorflow_integrator
