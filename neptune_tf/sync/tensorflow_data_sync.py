@@ -48,7 +48,7 @@ class TensorflowDataSync(object):
         run_path = os.path.relpath(path, self._path)
         run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path)
         if not self._experiment_exists(run_id, run_path):
-            with self._project.create_experiment(name=run_id,
+            with self._project.create_experiment(name=run_path,
                                                  properties={
                                                      'tf/run/path': run_path
                                                  },
