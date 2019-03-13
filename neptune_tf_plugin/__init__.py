@@ -13,3 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import click
+
+
+@click.command('tf')
+@click.option('--api-token', '-a', help='Neptune Authorization Token')
+@click.option('--project', '-p', help='Project name')
+@click.argument('path', required=True)
+def sync(api_token, project, path):
+    # We do not want to import anything if process was executed for autocompletion purposes.
+    from neptune_tf.sync.sync import sync as run_sync
+    return run_sync(api_token=api_token, project=project, path=path)

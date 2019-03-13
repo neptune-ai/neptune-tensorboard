@@ -13,23 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
 
 import click
 import neptune
 
-from neptune_tf.sync import TensorflowDataSync
+from neptune_tf.sync.tensorflow_data_sync import TensorflowDataSync
 
 
-@click.group()
-def main():
-    pass
-
-
-@main.command('sync')
-@click.option('--api-token', '-a', help='Neptune Authorization Token')
-@click.option('--project', '-p', help='Project name')
-@click.argument('path', required=True)
 def sync(api_token, project, path):
     neptune.init(api_token=api_token, project_qualified_name=project)
 
@@ -39,7 +31,3 @@ def sync(api_token, project, path):
 
     loader = TensorflowDataSync(neptune.project, path)
     loader.run()
-
-
-if __name__ == '__main__':
-    main()
