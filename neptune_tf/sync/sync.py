@@ -22,8 +22,8 @@ import neptune
 from neptune_tf.sync.tensorflow_data_sync import TensorflowDataSync
 
 
-def sync(api_token, project, path):
-    neptune.init(api_token=api_token, project_qualified_name=project)
+def sync(project, path):
+    neptune.init(project_qualified_name=project)
 
     if not os.path.exists(path):
         click.echo("ERROR: Provided path doesn't exist", err=True)
