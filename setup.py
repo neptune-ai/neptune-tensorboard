@@ -43,13 +43,11 @@ def main():
             author_email='contact@neptune.ml',
             description='Neptune Tensorflow',
             long_description=__doc__,
-            packages=find_packages(include=['neptune_tf*']),
+            packages=find_packages(),
             platforms='any',
             install_requires=requirements,
             entry_points={
-                'console_scripts': [
-                    'neptune-tf = neptune_tf.cli.main:main',
-                ],
+                'neptune.plugins': "tf = neptune_tf_plugin:sync"
             },
             cmdclass={
                 'git_version': git_version.GitVersion,
