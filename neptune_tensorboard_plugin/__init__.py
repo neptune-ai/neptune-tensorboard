@@ -13,6 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune_tf.sync import tensorflow_data_sync
 
-TensorflowDataSync = tensorflow_data_sync.TensorflowDataSync
+import click
+
+
+@click.command('tensorboard')
+@click.option('--project', '-p', help='Project name')
+@click.argument('path', required=True)
+def sync(project, path):
+    # We do not want to import anything if process was executed for autocompletion purposes.
+    from neptune_tensorboard.sync.sync import sync as run_sync
+    return run_sync(project=project, path=path)

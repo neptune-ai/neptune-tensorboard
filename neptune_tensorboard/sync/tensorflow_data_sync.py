@@ -24,7 +24,7 @@ import click
 import tensorflow as tf
 from future.moves import collections, sys
 
-from neptune_tf.integration.tensorflow_integration import TensorflowIntegrator
+from neptune_tensorboard.integration.tensorflow_integration import TensorflowIntegrator
 
 
 class TensorflowDataSync(object):

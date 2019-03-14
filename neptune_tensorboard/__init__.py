@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import neptune
 
-import click
+
+def integrate_with_tensorflow():
+    from neptune_tensorboard.integration.tensorflow_integration import integrate_with_tensorflow as integration
+    integration(neptune.get_experiment)
 
 
-@click.command('tf')
-@click.option('--project', '-p', help='Project name')
-@click.argument('path', required=True)
-def sync(project, path):
-    # We do not want to import anything if process was executed for autocompletion purposes.
-    from neptune_tf.sync.sync import sync as run_sync
-    return run_sync(project=project, path=path)
+def integrate_with_keras():
+    from neptune_tensorboard.integration.keras_integration import integrate_with_keras as integration
+    integration(neptune.get_experiment)

@@ -1,2 +1,2 @@
-# neptune-tensorflow
-[![Build Status](https://travis-ci.org/neptune-ml/neptune-tensorflow.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-tensorflow)
+# neptune-tensorboard
+[![Build Status](https://travis-ci.org/neptune-ml/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-tensorboard)
