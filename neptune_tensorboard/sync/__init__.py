@@ -13,14 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import neptune
+from neptune_tensorboard.sync import tensorflow_data_sync
 
-
-def integrate_with_tensorflow():
-    from neptune_tf.integration.tensorflow_integration import integrate_with_tensorflow as integration
-    integration(neptune.get_experiment)
-
-
-def integrate_with_keras():
-    from neptune_tf.integration.keras_integration import integrate_with_keras as integration
-    integration(neptune.get_experiment)
+TensorflowDataSync = tensorflow_data_sync.TensorflowDataSync

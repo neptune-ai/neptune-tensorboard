@@ -35,19 +35,19 @@ def main():
     with open(os.path.join(root_dir, 'requirements.txt')) as f:
         requirements = [r.strip() for r in f]
         setup(
-            name='neptune-tensorflow',
+            name='neptune-tensorboard',
             version=version(),
-            url='https://github.com/neptune-ml/neptune-tensorflow',
+            url='https://github.com/neptune-ml/neptune-tensorboard',
             license='Apache License 2.0',
             author='neptune.ml',
             author_email='contact@neptune.ml',
-            description='Neptune Tensorflow',
+            description='Neptune Tensorboard',
             long_description=__doc__,
             packages=find_packages(),
             platforms='any',
             install_requires=requirements,
             entry_points={
-                'neptune.plugins': "tf = neptune_tf_plugin:sync"
+                'neptune.plugins': "tensorboard = neptune_tensorboard_plugin:sync"
             },
             cmdclass={
                 'git_version': git_version.GitVersion,

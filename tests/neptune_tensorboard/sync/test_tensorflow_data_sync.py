@@ -19,7 +19,7 @@ import mock
 import tensorflow as tf
 from bunch import Bunch
 
-from neptune_tf.sync.tensorflow_data_sync import TensorflowDataSync
+from neptune_tensorboard.sync.tensorflow_data_sync import TensorflowDataSync
 
 
 class TensorflowDataSyncTest(unittest.TestCase):

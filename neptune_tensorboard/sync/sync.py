@@ -19,7 +19,7 @@ import os
 import click
 import neptune
 
-from neptune_tf.sync.tensorflow_data_sync import TensorflowDataSync
+from neptune_tensorboard.sync.tensorflow_data_sync import TensorflowDataSync
 
 
 def sync(project, path):
