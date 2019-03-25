@@ -45,7 +45,7 @@ class TensorflowIntegrator(object):
         self._experiment_holder = experiment_getter
         self._summary_writer_to_graph_id = {}
 
-    def add_summary(self, summary_writer, summary, global_step=None):
+    def add_summary(self, summary, global_step=None):
 
         if isinstance(summary, bytes):
             summ = summary_pb2.Summary()
@@ -55,23 +55,23 @@ class TensorflowIntegrator(object):
         x = self._calculate_x_value(global_step)
         for value in summary.value:
             try:
-                self.add_value(summary_writer.get_logdir(), x, value)
+                self.add_value(x, value)
             except NeptuneException:
                 pass
 
-    def add_value(self, log_dir, x, value):
+    def add_value(self, x, value):
         field = value.WhichOneof('value')
 
         if field == 'simple_value':
-            self._send_numeric_value(log_dir, value.tag, x, value.simple_value)
+            self._send_numeric_value(value.tag, x, value.simple_value)
         elif field == 'image':
-            self._send_image(log_dir, value.tag, x, value.image.encoded_image_string)
+            self._send_image(value.tag, x, value.image.encoded_image_string)
         elif field == 'tensor' and value.tensor.dtype == tf.string:
             string_values = []
             for _ in range(0, len(value.tensor.string_val)):
                 string_value = value.tensor.string_val.pop()
                 string_values.append(string_value.decode("utf-8"))
-                self._send_text(log_dir, value.tag, x, ", ".join(string_values))
+                self._send_text(value.tag, x, ", ".join(string_values))
 
     def add_graph_def(self, graph_def, log_dir):
         writer = self.get_writer_name(log_dir)
@@ -85,24 +85,21 @@ class TensorflowIntegrator(object):
         except NeptuneException:
             pass
 
-    def _send_numeric_value(self, log_dir, value_tag, x, simple_value):
-        writer_name = self.get_writer_name(log_dir)
-        self._experiment_holder().send_metric(channel_name='{}_{}'.format(writer_name, value_tag),
+    def _send_numeric_value(self, value_tag, x, simple_value):
+        self._experiment_holder().send_metric(channel_name=value_tag,
                                               x=x,
                                               y=simple_value)
 
-    def _send_image(self, log_dir, image_tag, x, encoded_image):
-        writer_name = self.get_writer_name(log_dir)
+    def _send_image(self, image_tag, x, encoded_image):
         image_desc = "({}. Step {})".format(image_tag, x)
-        self._experiment_holder().send_image(channel_name='{}_{}'.format(writer_name, image_tag),
+        self._experiment_holder().send_image(channel_name=image_tag,
                                              x=x,
                                              y=Image.open(io.BytesIO(encoded_image)),
                                              name=image_desc,
                                              description=image_desc)
 
-    def _send_text(self, log_dir, value_tag, x, text):
-        writer_name = self.get_writer_name(log_dir)
-        self._experiment_holder().send_text(channel_name='{}_{}'.format(writer_name, value_tag),
+    def _send_text(self, value_tag, x, text):
+        self._experiment_holder().send_text(channel_name=value_tag,
                                             x=x,
                                             y=text)
 
@@ -127,7 +124,7 @@ def _integrate_with_tensorflow(experiment_getter):
     _add_graph_def_method = tf.summary.FileWriter._add_graph_def
 
     def _neptune_add_summary(summary_writer, summary, global_step=None):
-        tensorflow_integrator.add_summary(summary_writer, summary, global_step)
+        tensorflow_integrator.add_summary(summary, global_step)
         _add_summary_method(summary_writer, summary, global_step=global_step)
 
     def _neptune_add_graph_def(summary_writer, graph_def, global_step=None):

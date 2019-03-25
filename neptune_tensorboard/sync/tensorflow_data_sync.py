@@ -82,7 +82,7 @@ class TensorflowDataSync(object):
 
         for tag in tag_buckets:
             for record in tag_buckets[tag]:
-                tf_integrator.add_value(path, record.x, record.value)
+                tf_integrator.add_value(record.x, record.value)
 
     @staticmethod
     def _apply_limit(experiment, step, summary, tag_buckets):
