@@ -16,20 +16,10 @@
 
 import unittest
 
-from bunch import Bunch
-
 from neptune_tensorboard.sync.internal.path_parser import parse_path_to_experiment_name, parse_path_to_hostname
 
 
-class ParhParserTest(unittest.TestCase):
-    _EXPERIMENT = Bunch()
-    _EXPERIMENT.limits = {
-        'channels': {
-            'numeric': 100,
-            'text': 10,
-            'image': 10
-        }
-    }
+class PathParserTest(unittest.TestCase):
 
     def test_parsing_experiment_name(self):
         # GIVEN
