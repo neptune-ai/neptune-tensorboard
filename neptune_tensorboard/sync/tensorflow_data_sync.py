@@ -29,6 +29,7 @@ from neptune_tensorboard.integration.tensorflow_integration import TensorflowInt
 
 class TensorflowDataSync(object):
     _RECORD = collections.namedtuple('Record', 'x value')
+    _EVENTS_FILE_PREFIX = "events.out.tfevents"
 
     def __init__(self, project, path):
         self._project = project
@@ -41,30 +42,38 @@ class TensorflowDataSync(object):
                     self._load_single_run(os.path.join(root, run_file))
                 except Exception as e:
                     print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
-                    traceback.print_exc(e)
+                    try:
+                        traceback.print_exc(e)
+                    except:
+                        pass
 
     def _load_single_run(self, path):
-        click.echo("Loading {}...".format(path))
-        run_path = os.path.relpath(path, self._path)
-        run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path)
-        if not self._experiment_exists(run_id, run_path):
-            with self._project.create_experiment(name=run_path,
-                                                 properties={
-                                                     'tf/run/path': run_path
-                                                 },
-                                                 tags=[run_id],
-                                                 upload_source_files=[],
-                                                 abort_callback=lambda *args: None,
-                                                 upload_stdout=False,
-                                                 upload_stderr=False,
-                                                 send_hardware_metrics=False,
-                                                 run_monitoring_thread=False,
-                                                 handle_uncaught_exceptions=True) as exp:
-                tf_integrator = TensorflowIntegrator(lambda *args: exp)
-                self._load_single_file(exp, path, tf_integrator)
-            click.echo("{} was saved as {}".format(run_path, exp.id))
-        else:
-            click.echo("{} is already synced".format(run_path))
+        path.startswith(TensorflowDataSync._EVENTS_FILE_PREFIX)
+        if TensorflowDataSync._EVENTS_FILE_PREFIX in path:
+            click.echo("Loading {}...".format(path))
+            run_path = os.path.relpath(path, self._path)
+            run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path)
+            exp_name = re.sub(r'[^0-9A-Za-z_\-]', '_', "_".join(run_path.split("/")[:-1]))
+            hostname = ".".join(str(run_path.split("/")[-1]).split(".")[4:])
+            if not self._experiment_exists(run_id, exp_name):
+                with self._project.create_experiment(name=exp_name,
+                                                     properties={
+                                                         'tf/run/path': run_path
+                                                     },
+                                                     tags=[run_id],
+                                                     upload_source_files=[],
+                                                     abort_callback=lambda *args: None,
+                                                     upload_stdout=False,
+                                                     upload_stderr=False,
+                                                     send_hardware_metrics=False,
+                                                     run_monitoring_thread=False,
+                                                     handle_uncaught_exceptions=True,
+                                                     hostname=hostname) as exp:
+                    tf_integrator = TensorflowIntegrator(lambda *args: exp)
+                    self._load_single_file(exp, path, tf_integrator)
+                click.echo("{} was saved as {}".format(run_path, exp.id))
+            else:
+                click.echo("{} is already synced".format(run_path))
 
     def _experiment_exists(self, run_id, run_path):
         existing_experiments = self._project.get_experiments(tag=run_id)
