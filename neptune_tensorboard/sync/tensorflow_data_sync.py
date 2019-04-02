@@ -44,7 +44,7 @@ class TensorflowDataSync(object):
                     print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
                     try:
                         traceback.print_exc(e)
-                    except:
+                    except: # pylint: disable=bare-except
                         pass
 
     def _load_single_run(self, path):
