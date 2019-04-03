@@ -25,6 +25,7 @@ import tensorflow as tf
 from future.moves import collections, sys
 
 from neptune_tensorboard.integration.tensorflow_integration import TensorflowIntegrator
+from neptune_tensorboard.sync.internal.path_parser import parse_path_to_experiment_name, parse_path_to_hostname
 
 
 class TensorflowDataSync(object):
@@ -41,14 +42,19 @@ class TensorflowDataSync(object):
                     self._load_single_run(os.path.join(root, run_file))
                 except Exception as e:
                     print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
-                    traceback.print_exc(e)
+                    try:
+                        traceback.print_exc(e)
+                    except: # pylint: disable=bare-except
+                        pass
 
     def _load_single_run(self, path):
         click.echo("Loading {}...".format(path))
         run_path = os.path.relpath(path, self._path)
         run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path)
-        if not self._experiment_exists(run_id, run_path):
-            with self._project.create_experiment(name=run_path,
+        exp_name = parse_path_to_experiment_name(run_path)
+        hostname = parse_path_to_hostname(run_path)
+        if not self._experiment_exists(run_id, exp_name):
+            with self._project.create_experiment(name=exp_name,
                                                  properties={
                                                      'tf/run/path': run_path
                                                  },
@@ -59,7 +65,8 @@ class TensorflowDataSync(object):
                                                  upload_stderr=False,
                                                  send_hardware_metrics=False,
                                                  run_monitoring_thread=False,
-                                                 handle_uncaught_exceptions=True) as exp:
+                                                 handle_uncaught_exceptions=True,
+                                                 hostname=hostname or None) as exp:
                 tf_integrator = TensorflowIntegrator(lambda *args: exp)
                 self._load_single_file(exp, path, tf_integrator)
             click.echo("{} was saved as {}".format(run_path, exp.id))
