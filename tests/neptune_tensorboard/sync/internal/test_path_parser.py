@@ -46,11 +46,11 @@ class PathParserTest(unittest.TestCase):
             ),
             (
                 "mnist/logs/mnist_with_summaries/test/events.out.tfevents.1551288692.adam-nowak",
-                "mnist_logs_mnist_with_summaries_test"
+                "mnist/logs/mnist_with_summaries/test"
             ),
             (
                 "mnist/logs/mnist_with_summaries/train/events.out.tfevents.1551288692.piotr-adamski",
-                "mnist_logs_mnist_with_summaries_train"
+                "mnist/logs/mnist_with_summaries/train"
             ),
             (
                 "mnist/something",

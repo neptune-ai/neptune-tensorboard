@@ -32,9 +32,8 @@ def parse_path_to_experiment_name(path):
     """
     os.path.dirname(path)
     experiment_name = os.path.dirname(path)
-    sanitized_experiment_name = re.sub(r'[^0-9A-Za-z_\-]', '_', experiment_name)
-    if sanitized_experiment_name:
-        return sanitized_experiment_name
+    if experiment_name:
+        return experiment_name
     else:
         return "untitled-tensorboard"
 
