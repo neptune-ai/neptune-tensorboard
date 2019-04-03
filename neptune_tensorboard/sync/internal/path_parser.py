@@ -15,7 +15,6 @@
 #
 
 import os
-import re
 
 _EVENTS_FILE_PREFIX = "events.out.tfevents."
 
