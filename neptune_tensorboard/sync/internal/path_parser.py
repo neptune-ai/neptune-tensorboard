@@ -30,7 +30,6 @@ def parse_path_to_experiment_name(path):
     Returns: a string representing sanitized project name based on the path, or "untitled-tensorboard" if name cannot
         be determined
     """
-    os.path.dirname(path)
     experiment_name = os.path.dirname(path)
     if experiment_name:
         return experiment_name
