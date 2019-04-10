@@ -76,7 +76,7 @@ Indices and tables
 .. _Git Issues: https://github.com/neptune-ml/neptune-tensorboard/issues
 .. _Git Feature Request: https://github.com/neptune-ml/neptune-tensorboard/issues
 .. _TensorBoard: https://www.tensorflow.org/guide/summaries_and_tensorboard
-.. _Neptune: http://bit.ly/2YnX5Vs
+.. _Neptune: http://bit.ly/2uUd9AB
 .. _Neptune community forum: https://community.neptune.ml/
 .. _experiment link: https://ui.neptune.ml/jakub-czakon/tensorboard-integration/compare?shortId=%5B%22TEN-41%22%2C%22TEN-40%22%2C%22TEN-39%22%2C%22TEN-38%22%2C%22TEN-37%22%2C%22TEN-36%22%2C%22TEN-35%22%2C%22TEN-34%22%2C%22TEN-33%22%2C%22TEN-32%22%5D
 .. _Github projects: https://github.com/neptune-ml/neptune-tensorboard/projects

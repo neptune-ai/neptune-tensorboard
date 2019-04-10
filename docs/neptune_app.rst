@@ -30,4 +30,4 @@ Click on `Projects` and the `New project`. Choose a name for it and whether you 
 .. figure:: https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/new_project.png
     :alt: image
     
-.. _Neptune website: http://bit.ly/2YnX5Vs
+.. _Neptune website: http://bit.ly/2uUd9AB

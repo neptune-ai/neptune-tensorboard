@@ -26,7 +26,7 @@ See [neptune-tensorboard documentation site](https://neptune-tensorboard.readthe
 # Get started
 
 ## Register
-Go to [neptune.ml](http://bit.ly/2YnX5Vs) and sign up.
+Go to [neptune.ml](http://bit.ly/2uUd9AB) and sign up.
 
 It is completely free for individuals and non-organizations, and you can invite others to join your team!
 
