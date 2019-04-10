@@ -5,6 +5,7 @@
 # Overview
 `neptune-tensorboard` integrates `TensorBoard` with `Neptune` to let you get the best of both worlds.
 Enjoy tracking from `TensorBoard` with organizion and collaboration of `Neptune`.
+
 With `neptune-tensorboard` you can have your `TensorBoard` experiment runs hosted in a beatutiful knowledge repo that lets you invite and manage project contributors. 
 
 All you need to do is go to your command line and run:
