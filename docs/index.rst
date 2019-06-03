@@ -4,7 +4,7 @@ neptune-tensorboard: TensorBoard integration with Neptune
 This library integrates `TensorBoard`_ with `Neptune`_ to let you get the best of both worlds.
 Enjoy tracking experience of `TensorBoard`_ with organizion and collaboration of `Neptune`_.
 
-With `neptune-mlflow` you can have your `TensorBoard`_ experiment runs hosted in a beatutiful knowledge repo that lets you invite and manage project contributors. 
+With `neptune-tensorboard` you can have your `TensorBoard`_ experiment runs hosted in a beatutiful knowledge repo that lets you invite and manage project contributors. 
  
 With one simple command:
 
@@ -50,7 +50,7 @@ and share your work with others by sending a `experiment link`_
 Bug Reports and Questions
 -----------------------
 
-neptune-mlflow is an Apache Licence 2.0 project and the source code is available on `GitHub`_. If you
+neptune-tensorboard is an Apache Licence 2.0 project and the source code is available on `GitHub`_. If you
 find yourself in any trouble drop an isse on `Git Issues`_, fire a feature request on
 `Git Feature Request`_ or ask us on the `Neptune community forum`_ or `Neptune Slack`_.
 
