@@ -1,8 +1,8 @@
 neptune-tensorboard: TensorBoard integration with Neptune
 ===========================================
  
-This library integrates `TensorBoard`_ with `Neptune`_ to let you get the best of both worlds.
-Enjoy tracking experience of `TensorBoard`_ with organizion and collaboration of `Neptune`_.
+This library integrates `TensorBoard`_ with `Neptune website`_ to let you get the best of both worlds.
+Enjoy tracking experience of `TensorBoard`_ with organizion and collaboration of `Neptune website`_.
 
 With `neptune-tensorboard` you can have your `TensorBoard`_ experiment runs hosted in a beatutiful knowledge repo that lets you invite and manage project contributors. 
  
@@ -46,15 +46,13 @@ and share your work with others by sending a `experiment link`_
    Keras integration <user_guide/keras_integration>
    Tensorflow integration <user_guide/tensorflow_integration>
 
-   
+
 Bug Reports and Questions
 -----------------------
 
 neptune-tensorboard is an Apache Licence 2.0 project and the source code is available on `GitHub`_. If you
 find yourself in any trouble drop an isse on `Git Issues`_, fire a feature request on
-`Git Feature Request`_ or ask us on the `Neptune community forum`_ or `Neptune Slack`_.
-
-You can join our slack by clicking on the `Neptune Slack Join`_.
+`Git Feature Request`_ or ask us on the `Neptune community forum`_ or `Neptune community spectrum`_.
 
 
 Contribute
@@ -62,7 +60,7 @@ Contribute
 
 We keep an updated list of open issues/feature ideas on github project page `Github projects`_.
 If you feel like taking a shot at one of those do go for it!
-In case of any trouble please talk to us on the `Neptune Slack`_.
+In case of any trouble please talk to us on the `Neptune community spectrum`_.
 
 
 Indices and tables
@@ -76,9 +74,8 @@ Indices and tables
 .. _Git Issues: https://github.com/neptune-ml/neptune-tensorboard/issues
 .. _Git Feature Request: https://github.com/neptune-ml/neptune-tensorboard/issues
 .. _TensorBoard: https://www.tensorflow.org/guide/summaries_and_tensorboard
-.. _Neptune: http://bit.ly/2uUd9AB
-.. _Neptune community forum: https://community.neptune.ml/
 .. _experiment link: https://ui.neptune.ml/jakub-czakon/tensorboard-integration/compare?shortId=%5B%22TEN-41%22%2C%22TEN-40%22%2C%22TEN-39%22%2C%22TEN-38%22%2C%22TEN-37%22%2C%22TEN-36%22%2C%22TEN-35%22%2C%22TEN-34%22%2C%22TEN-33%22%2C%22TEN-32%22%5D
+.. _Neptune website: https://neptune.ml/
+.. _Neptune community forum: https://community.neptune.ml/
 .. _Github projects: https://github.com/neptune-ml/neptune-tensorboard/projects
-.. _Neptune Slack: https://neptune-community.slack.com
-.. _Neptune Slack Join: https://join.slack.com/t/neptune-community/shared_invite/enQtNTI4Mjg3ODk2MjQwLWE5YjI0YThiODViNDY4MDBlNmRmZTkwNTE3YzNiMjQ5MGM2ZTFhNzhjN2YzMTIwNDM3NjQyZThmMDk1Y2Q1ZjY
+.. _Neptune community spectrum: https://spectrum.chat/neptune-community?tab=posts
