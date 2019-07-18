@@ -50,7 +50,7 @@ and share your work with others by sending a `experiment link`_
 Bug Reports and Questions
 -----------------------
 
-neptune-contrib is MIT-licensed and the source code is available on `GitHub`_. If you
+neptune-tensorboard is an Apache Licence 2.0 project and the source code is available on `GitHub`_. If you
 find yourself in any trouble drop an isse on `Git Issues`_, fire a feature request on
 `Git Feature Request`_ or ask us on the `Neptune community forum`_ or `Neptune community spectrum`_.
 
