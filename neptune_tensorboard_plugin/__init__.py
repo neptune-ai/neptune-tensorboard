@@ -21,11 +21,20 @@ import click
 @click.option('--project', '-p', help='Project name')
 @click.argument('path', required=True)
 def sync(project, path):
-    """
-    Import TensorFlow event files to Neptune\n
+    """Import TensorFlow event files to Neptune\n
     PATH is a directory where Neptune will look to find TensorFlow event files that it can import.
     Neptune will recursively walk the directory structure rooted at logdir, looking for .*tfevents.* files.
+
+    Examples:
+
+        neptune tensorboard .
+
+        neptune tensorboard /path
+
+        neptune tensorboard /path --project username/sandbox
+
     """
+
     # We do not want to import anything if process was executed for autocompletion purposes.
     from neptune_tensorboard.sync.sync import sync as run_sync
     return run_sync(project=project, path=path)
