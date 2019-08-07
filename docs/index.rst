@@ -1,5 +1,5 @@
 neptune-tensorboard: TensorBoard integration with Neptune
-===========================================
+=============================================================
 
 .. image:: ../_static/images/tensorboard_neptuneml.png
    :target: ../_static/images/tensorboard_neptuneml.png
