@@ -1,5 +1,9 @@
 neptune-tensorboard: TensorBoard integration with Neptune
 ===========================================
+
+.. image:: ../_static/images/tensorboard_neptuneml.png
+   :target: ../_static/images/tensorboard_neptuneml.png
+   :alt: TensorBoard neptune.ml integration
  
 This library integrates `TensorBoard`_ with `Neptune website`_ to let you get the best of both worlds.
 Enjoy tracking experience of `TensorBoard`_ with organizion and collaboration of `Neptune website`_.
