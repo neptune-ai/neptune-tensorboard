@@ -81,7 +81,7 @@ class TensorflowDataSync(object):
     def _load_single_file(experiment, path, tf_integrator):
         tag_buckets = {}
         for record in tf.train.summary_iterator(path):
-            if record.graph_def != "":
+            if record.graph_def:
                 graph_def = tf.GraphDef()
                 graph_def.ParseFromString(record.graph_def)
                 tf_integrator.add_graph_def(graph_def, path)
