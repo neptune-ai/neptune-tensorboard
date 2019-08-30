@@ -50,7 +50,7 @@ class TensorflowDataSync(object):
     def _load_single_run(self, path):
         click.echo("Loading {}...".format(path))
         run_path = os.path.relpath(path, self._path)
-        run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path)
+        run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path).lower()
         exp_name = parse_path_to_experiment_name(run_path)
         hostname = parse_path_to_hostname(run_path)
         if not self._experiment_exists(run_id, exp_name):
