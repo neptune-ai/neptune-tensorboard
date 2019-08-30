@@ -23,6 +23,7 @@ import tensorflow as tf
 from PIL import Image
 from future.builtins import object
 from neptune.exceptions import NeptuneException
+from pkg_resources import parse_version
 from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
 
 _integrated_with_tensorflow = False
@@ -60,33 +61,51 @@ class TensorflowIntegrator(object):
         field = value.WhichOneof('value')
 
         if field == 'simple_value':
-            self._send_numeric_value(value.tag, x, value.simple_value)
-        elif field == 'image':
-            self._send_image(value.tag, x, value.image.encoded_image_string)
-        elif field == 'tensor' and value.tensor.dtype == tf.string:
+            self.send_numeric(tag=value.tag,
+                              step=x,
+                              value=value.simple_value,
+                              wall_time=time.time())
+            return
+
+        if field == 'image':
+            self.send_image(tag=value.tag,
+                            step=x,
+                            encoded_image_string=value.image.encoded_image_string,
+                            wall_time=time.time())
+            return
+
+        if field == 'tensor' and value.tensor.dtype == tf.string:
             string_values = []
             for _ in range(0, len(value.tensor.string_val)):
                 string_value = value.tensor.string_val.pop()
                 string_values.append(string_value.decode("utf-8"))
-                self._send_text(value.tag, x, ", ".join(string_values))
 
-    def _send_numeric_value(self, value_tag, x, simple_value):
-        self._experiment_holder().send_metric(channel_name=value_tag,
-                                              x=x,
-                                              y=simple_value)
+            self.send_text(tag=value.tag,
+                           step=x,
+                           text=", ".join(string_values),
+                           wall_time=time.time())
+            return
 
-    def _send_image(self, image_tag, x, encoded_image):
-        image_desc = "({}. Step {})".format(image_tag, x)
-        self._experiment_holder().send_image(channel_name=image_tag,
-                                             x=x,
-                                             y=Image.open(io.BytesIO(encoded_image)),
+    def send_numeric(self, tag, step, value, wall_time):
+        self._experiment_holder().send_metric(channel_name=tag,
+                                              x=step,
+                                              y=value,
+                                              timestamp=wall_time)
+
+    def send_image(self, tag, step, encoded_image_string, wall_time):
+        image_desc = "({}. Step {})".format(tag, step)
+        self._experiment_holder().send_image(channel_name=tag,
+                                             x=step,
+                                             y=Image.open(io.BytesIO(encoded_image_string)),
                                              name=image_desc,
-                                             description=image_desc)
+                                             description=image_desc,
+                                             timestamp=wall_time)
 
-    def _send_text(self, value_tag, x, text):
-        self._experiment_holder().send_text(channel_name=value_tag,
-                                            x=x,
-                                            y=text)
+    def send_text(self, tag, step, text, wall_time):
+        self._experiment_holder().send_text(channel_name=tag,
+                                            x=step,
+                                            y=text,
+                                            timestamp=wall_time)
 
     @staticmethod
     def get_writer_name(log_dir):
@@ -103,7 +122,26 @@ class TensorflowIntegrator(object):
 def _integrate_with_tensorflow(experiment_getter):
     tensorflow_integrator = TensorflowIntegrator(experiment_getter=experiment_getter)
 
-    # pylint: disable=no-member, protected-access, no-name-in-module, import-error
+    try:
+        # noinspection PyUnresolvedReferences
+        version = parse_version(tf.version.VERSION)
+
+        # Tensorflow 2.x
+        if version >= parse_version('2.0.0-rc0'):
+            return _patch_tensorflow_2x(experiment_getter)
+
+        # Tensorflow 1.x
+        if version >= parse_version('1.0.0'):
+            return _patch_tensorflow_1x(tensorflow_integrator)
+
+    except AttributeError:
+        pass
+
+    raise ValueError("Unsupported tensorflow version")
+
+
+# pylint: disable=no-member, protected-access, no-name-in-module, import-error
+def _patch_tensorflow_1x(tensorflow_integrator):
     _add_summary_method = tf.summary.FileWriter.add_summary
 
     def _neptune_add_summary(summary_writer, summary, global_step=None):
@@ -113,3 +151,36 @@ def _integrate_with_tensorflow(experiment_getter):
     tf.summary.FileWriter.add_summary = _neptune_add_summary
 
     return tensorflow_integrator
+
+
+def _patch_tensorflow_2x(experiment_getter):
+    _scalar = tf.summary.scalar
+    _text = tf.summary.text
+    _image = tf.summary.image
+
+    def scalar(name, data, step=None, description=None):
+        if step is None:
+            step = tf.summary.experimental.get_step()
+        experiment_getter().log_metric(name, x=step, y=data)
+        _scalar(name, data, step, description)
+
+    def image(name, data, step=None, max_outputs=3, description=None):
+        if step is None:
+            step = tf.summary.experimental.get_step()
+        experiment_getter().log_image(name, x=step, y=data, description=description)
+        _image(name, data, step, max_outputs, description)
+
+    def text(name, data, step=None, description=None):
+        if step is None:
+            step = tf.summary.experimental.get_step()
+        experiment_getter().log_text(name, x=step, y=data)
+        _text(name, data, step, description)
+
+    tf.summary.scalar = scalar
+    tf.summary._scalar = _scalar
+
+    tf.summary.image = image
+    tf.summary._image = _image
+
+    tf.summary.text = text
+    tf.summary._text = _text

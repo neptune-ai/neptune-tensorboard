@@ -35,6 +35,11 @@ def sync(project, path):
 
     """
 
+    # suppress numpy deprecation warnings
+    # tensorflow uses deprecated api
+    import warnings
+    warnings.simplefilter(action='ignore', category=FutureWarning)
+
     # We do not want to import anything if process was executed for autocompletion purposes.
     from neptune_tensorboard.sync.sync import sync as run_sync
     return run_sync(project=project, path=path)
