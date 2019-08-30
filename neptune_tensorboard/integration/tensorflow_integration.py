@@ -18,13 +18,12 @@ from __future__ import unicode_literals
 import io
 import os
 import time
-import uuid
 
 import tensorflow as tf
 from PIL import Image
-from future.builtins import object, str
-from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
+from future.builtins import object
 from neptune.exceptions import NeptuneException
+from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
 
 _integrated_with_tensorflow = False
 
@@ -41,9 +40,7 @@ def integrate_with_tensorflow(experiment_getter):
 class TensorflowIntegrator(object):
 
     def __init__(self, experiment_getter=None):
-
         self._experiment_holder = experiment_getter
-        self._summary_writer_to_graph_id = {}
 
     def add_summary(self, summary, global_step=None):
 
@@ -72,18 +69,6 @@ class TensorflowIntegrator(object):
                 string_value = value.tensor.string_val.pop()
                 string_values.append(string_value.decode("utf-8"))
                 self._send_text(value.tag, x, ", ".join(string_values))
-
-    def add_graph_def(self, graph_def, log_dir):
-        writer = self.get_writer_name(log_dir)
-        if writer in list(self._summary_writer_to_graph_id.keys()):
-            graph_id = self._summary_writer_to_graph_id[writer]
-        else:
-            graph_id = str(uuid.uuid4())
-            self._summary_writer_to_graph_id[writer] = graph_id
-        try:
-            self._experiment_holder().send_graph(graph_id, str(graph_def))
-        except NeptuneException:
-            pass
 
     def _send_numeric_value(self, value_tag, x, simple_value):
         self._experiment_holder().send_metric(channel_name=value_tag,
@@ -119,28 +104,12 @@ def _integrate_with_tensorflow(experiment_getter):
     tensorflow_integrator = TensorflowIntegrator(experiment_getter=experiment_getter)
 
     # pylint: disable=no-member, protected-access, no-name-in-module, import-error
-
     _add_summary_method = tf.summary.FileWriter.add_summary
-    _add_graph_def_method = tf.summary.FileWriter._add_graph_def
 
     def _neptune_add_summary(summary_writer, summary, global_step=None):
         tensorflow_integrator.add_summary(summary, global_step)
         _add_summary_method(summary_writer, summary, global_step=global_step)
 
-    def _neptune_add_graph_def(summary_writer, graph_def, global_step=None):
-
-        try:
-            from tf.tensorboard.backend import process_graph
-        except ImportError:
-            from tensorboard.backend import process_graph
-
-        # Restricting graph only to UI relevant information.
-        process_graph.prepare_graph_for_ui(graph_def)
-        # pylint: disable=protected-access
-        tensorflow_integrator.add_graph_def(graph_def, summary_writer.get_logdir())
-        _add_graph_def_method(summary_writer, graph_def, global_step=global_step)
-
     tf.summary.FileWriter.add_summary = _neptune_add_summary
-    tf.summary.FileWriter._add_graph_def = _neptune_add_graph_def
 
     return tensorflow_integrator
