@@ -16,20 +16,21 @@
 from __future__ import print_function
 
 import os
-import random
 import re
 import traceback
 
 import click
 import tensorflow as tf
-from future.moves import collections, sys
+from future.moves import sys
+from tensorboard.backend.event_processing.event_accumulator import COMPRESSED_HISTOGRAMS, IMAGES, \
+    AUDIO, SCALARS, HISTOGRAMS, TENSORS
 
 from neptune_tensorboard.integration.tensorflow_integration import TensorflowIntegrator
+from neptune_tensorboard.sync.internal.events_loader import NeptuneEventAccumulator
 from neptune_tensorboard.sync.internal.path_parser import parse_path_to_experiment_name, parse_path_to_hostname
 
 
 class TensorflowDataSync(object):
-    _RECORD = collections.namedtuple('Record', 'x value')
 
     def __init__(self, project, path):
         self._project = project
@@ -79,35 +80,51 @@ class TensorflowDataSync(object):
 
     @staticmethod
     def _load_single_file(experiment, path, tf_integrator):
-        tag_buckets = {}
-        for record in tf.train.summary_iterator(path):
-            TensorflowDataSync._apply_limit(experiment, record.step, record.summary, tag_buckets)
+        accumulator = NeptuneEventAccumulator(path, size_guidance={
+            COMPRESSED_HISTOGRAMS: 0,
+            IMAGES: experiment.limits['channels']['image'],
+            AUDIO: 0,
+            SCALARS: experiment.limits['channels']['numeric'],
+            HISTOGRAMS: 0,
+            TENSORS: experiment.limits['channels']['text']
+        })
 
-        for tag in tag_buckets:
-            for record in tag_buckets[tag]:
-                tf_integrator.add_value(record.x, record.value)
+        accumulator.Reload()
 
-    @staticmethod
-    def _apply_limit(experiment, step, summary, tag_buckets):
-        for value in summary.value:
-            if value.tag not in tag_buckets:
-                tag_buckets[value.tag] = []
+        tags = accumulator.Tags()
 
-            bucket = tag_buckets[value.tag]
-            bucket.append(TensorflowDataSync._RECORD(step, value))
+        # load scalars
+        for tag in tags[SCALARS]:
+            for event in accumulator.Scalars(tag):
+                tf_integrator.send_numeric(
+                    tag=tag,
+                    step=event.step,
+                    value=event.value,
+                    wall_time=event.wall_time)
 
-            field = value.WhichOneof('value')
-            if field == 'simple_value':
-                channel_type = 'numeric'
-            elif field == 'image':
-                channel_type = 'image'
-            elif field == 'tensor' and value.tensor.dtype == tf.string:
-                channel_type = 'text'
-            else:
-                continue
+        # load images
+        for tag in tags[IMAGES]:
+            for event in accumulator.Images(tag):
+                tf_integrator.send_image(
+                    tag=tag,
+                    step=event.step,
+                    encoded_image_string=event.encoded_image_string,
+                    wall_time=event.wall_time)
 
-            if len(bucket) > experiment.limits['channels'][channel_type]:
-                if channel_type == 'numeric':
-                    del bucket[random.randint(1, len(bucket) - 2)]
-                else:
-                    bucket.pop(0)
+        # load tensors (actually only strings, see: NeptuneEventAccumulator._ProcessTensor)
+        for tag in tags[TENSORS]:
+            for event in accumulator.Tensors(tag):
+                string_values = []
+                for _ in range(0, len(event.tensor_proto.string_val)):
+                    string_value = event.tensor_proto.string_val.pop()
+                    try:
+                        string_values.append(tf.compat.as_text(string_value))
+                    except UnicodeDecodeError:
+                        # ignore invalid strings
+                        pass
+
+                tf_integrator.send_text(
+                    tag=tag,
+                    step=event.step,
+                    text=', '.join(string_values),
+                    wall_time=event.wall_time)
