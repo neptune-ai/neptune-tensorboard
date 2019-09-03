@@ -149,6 +149,7 @@ def _patch_tensorflow_1x(tensorflow_integrator):
         _add_summary_method(summary_writer, summary, global_step=global_step)
 
     tf.summary.FileWriter.add_summary = _neptune_add_summary
+    tf.summary.FileWriter._original_no_neptune_add_summary = _add_summary_method
 
     return tensorflow_integrator
 
@@ -177,10 +178,10 @@ def _patch_tensorflow_2x(experiment_getter):
         _text(name, data, step, description)
 
     tf.summary.scalar = scalar
-    tf.summary._scalar = _scalar
+    tf.summary._original_no_neptune_scalar = _scalar
 
     tf.summary.image = image
-    tf.summary._image = _image
+    tf.summary._original_no_neptune_image = _image
 
     tf.summary.text = text
-    tf.summary._text = _text
+    tf.summary._original_no_neptune_text = _text
