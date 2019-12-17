@@ -2,7 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/neptune-tensorboard.svg)](https://badge.fury.io/py/neptune-tensorboard)
 [![Build Status](https://travis-ci.org/neptune-ml/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-tensorboard)
 
-![TensorBoard neptune.ml integration](docs/_static/images/tensorboard_neptuneml.png)
+![TensorBoard neptune.ml integration](docs/_static/tensorboard_neptuneml.png)
 
 # Overview
 `neptune-tensorboard` integrates `TensorBoard` with `Neptune` to let you get the best of both worlds.
@@ -25,7 +25,7 @@ and easily [sharebale](https://ui.neptune.ml/jakub-czakon/tensorboard-integratio
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/9412c0124439f34b42737a7f3760849761c42dc4/tensorboard_2.png)
 
 # Documentation
-See [neptune-tensorboard documentation site](https://neptune-tensorboard.readthedocs.io) for more info.
+See [neptune-tensorboard docs](https://docs.neptune.ml/integrations/tensorboard.html) for more info.
 
 # Get started
 
@@ -78,16 +78,15 @@ or invite people to your project if you want to keep it private!
 If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
- * [neptune-tensorboard readthedocs](https://neptune-tensorboard.readthedocs.io)
+ * [neptune-tensorboard docs](https://docs.neptune.ml/integrations/tensorboard.html)
  * [github issues](https://github.com/neptune-ml/neptune-tensorboard/issues)
- * [neptune community forum](https://community.neptune.ml/)
- * [neptune community spectrum](https://spectrum.chat/neptune-community?tab=posts)
- 
+ * [neptune community spectrum](https://spectrum.chat/neptune-community)
+
 # Contributing
 If you see something that you don't like you are more than welcome to contribute!
 There are many options:
-  
-  * Participate in discussions on [neptune community forum](https://community.neptune.ml/) or [neptune community spectrum](https://spectrum.chat/neptune-community?tab=posts)
+
+  * Participate in discussions on [neptune community spectrum](https://spectrum.chat/neptune-community)
   * Submit a feature request or a bug here, on Github
   * Submit a pull request that deals with an open feature-request or bug
   * Spread a word about neptune-contrib in your community
