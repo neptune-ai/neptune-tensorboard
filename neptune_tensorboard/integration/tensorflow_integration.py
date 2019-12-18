@@ -24,7 +24,10 @@ from PIL import Image
 from future.builtins import object
 from neptune.exceptions import NeptuneException
 from pkg_resources import parse_version
-from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
+try:
+    from tensorflow_core.core.framework import summary_pb2  # pylint:disable=no-name-in-module
+except Exception as ignore:
+    from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
 
 _integrated_with_tensorflow = False
 
