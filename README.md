@@ -1,14 +1,14 @@
 # neptune-tensorboard
 [![PyPI version](https://badge.fury.io/py/neptune-tensorboard.svg)](https://badge.fury.io/py/neptune-tensorboard)
-[![Build Status](https://travis-ci.org/neptune-ml/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-tensorboard)
+[![Build Status](https://travis-ci.org/neptune-ai/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-tensorboard)
 
-![TensorBoard neptune.ml integration](docs/_static/tensorboard_neptuneml.png)
+![TensorBoard neptune.ai integration](docs/_static/tensorboard_neptuneml.png)
 
 # Overview
 `neptune-tensorboard` integrates `TensorBoard` with `Neptune` to let you get the best of both worlds.
-Enjoy tracking from `TensorBoard` with organizion and collaboration of `Neptune`.
+Enjoy tracking from `TensorBoard` with organization and collaboration of `Neptune`.
 
-With `neptune-tensorboard` you can have your `TensorBoard` experiment runs hosted in a beatutiful knowledge repo that lets you invite and manage project contributors. 
+With `neptune-tensorboard` you can have your `TensorBoard` experiment runs hosted in a beautiful knowledge repo that lets you invite and manage project contributors. 
 
 All you need to do is go to your command line and run:
 
@@ -16,21 +16,21 @@ All you need to do is go to your command line and run:
 neptune tensorboard /path/to/logdir --project USER_NAME/PROJECT_NAME
 ```
 
-and you have your [experiments](https://ui.neptune.ml/jakub-czakon/tensorboard-integration/experiments?filterId=bcef6881-128a-4126-a582-31b179bebf67) hosted on Neptune:
+and you have your [experiments](https://ui.neptune.ai/jakub-czakon/tensorboard-integration/experiments?filterId=bcef6881-128a-4126-a582-31b179bebf67) hosted on Neptune:
 
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/9412c0124439f34b42737a7f3760849761c42dc4/tensorboard_1.png)
 
-and easily [sharebale](https://ui.neptune.ml/jakub-czakon/tensorboard-integration/compare?shortId=%5B%22TEN-40%22%2C%22TEN-39%22%2C%22TEN-38%22%2C%22TEN-37%22%2C%22TEN-36%22%2C%22TEN-35%22%2C%22TEN-34%22%2C%22TEN-33%22%2C%22TEN-32%22%2C%22TEN-31%22%5D) with the world:
+and easily [sharebale](https://ui.neptune.ai/jakub-czakon/tensorboard-integration/compare?shortId=%5B%22TEN-40%22%2C%22TEN-39%22%2C%22TEN-38%22%2C%22TEN-37%22%2C%22TEN-36%22%2C%22TEN-35%22%2C%22TEN-34%22%2C%22TEN-33%22%2C%22TEN-32%22%2C%22TEN-31%22%5D) with the world:
 
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/9412c0124439f34b42737a7f3760849761c42dc4/tensorboard_2.png)
 
 # Documentation
-See [neptune-tensorboard docs](https://docs.neptune.ml/integrations/tensorboard.html) for more info.
+See [neptune-tensorboard docs](https://docs.neptune.ai/integrations/tensorboard.html) for more info.
 
 # Get started
 
 ## Register
-Go to [neptune.ml](http://bit.ly/2uUd9AB) and sign up.
+Go to [neptune.ai](http://bit.ly/2uUd9AB) and sign up.
 
 It is completely free for individuals and non-organizations, and you can invite others to join your team!
 
@@ -78,8 +78,8 @@ or invite people to your project if you want to keep it private!
 If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
- * [neptune-tensorboard docs](https://docs.neptune.ml/integrations/tensorboard.html)
- * [github issues](https://github.com/neptune-ml/neptune-tensorboard/issues)
+ * [neptune-tensorboard docs](https://docs.neptune.ai/integrations/tensorboard.html)
+ * [github issues](https://github.com/neptune-ai/neptune-tensorboard/issues)
  * [neptune community spectrum](https://spectrum.chat/neptune-community)
 
 # Contributing
