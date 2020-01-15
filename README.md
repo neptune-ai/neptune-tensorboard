@@ -79,7 +79,7 @@ If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
  * [neptune-tensorboard docs](https://docs.neptune.ai/integrations/tensorboard.html)
- * [github issues](https://github.com/neptune-ai/neptune-tensorboard/issues)
+ * [github issues](https://github.com/neptune-ml/neptune-tensorboard/issues)
  * [neptune community spectrum](https://spectrum.chat/neptune-community)
 
 # Contributing
