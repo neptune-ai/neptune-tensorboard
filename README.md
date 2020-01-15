@@ -1,6 +1,6 @@
 # neptune-tensorboard
 [![PyPI version](https://badge.fury.io/py/neptune-tensorboard.svg)](https://badge.fury.io/py/neptune-tensorboard)
-[![Build Status](https://travis-ci.org/neptune-ai/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-tensorboard)
+[![Build Status](https://travis-ci.org/neptune-ml/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-tensorboard)
 
 ![TensorBoard neptune.ai integration](docs/_static/tensorboard_neptuneml.png)
 
