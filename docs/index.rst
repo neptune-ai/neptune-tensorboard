@@ -1,2 +1,2 @@
-Neptune tensorboard documentation has moved `here <https://docs.neptune.ml/integrations/tensorboard.html>`_.
+Neptune TensorBoard documentation has moved `here <https://docs.neptune.ai/integrations/tensorboard.html>`_.
 ============================================================================================================
