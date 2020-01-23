@@ -37,7 +37,7 @@ def main():
         setup(
             name='neptune-tensorboard',
             version=version(),
-            url='https://github.com/neptune-ml/neptune-tensorboard',
+            url='https://github.com/neptune-ai/neptune-tensorboard',
             license='Apache License 2.0',
             author='neptune.ai',
             author_email='contact@neptune.ai',
