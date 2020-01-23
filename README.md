@@ -1,6 +1,6 @@
 # neptune-tensorboard
 [![PyPI version](https://badge.fury.io/py/neptune-tensorboard.svg)](https://badge.fury.io/py/neptune-tensorboard)
-[![Build Status](https://travis-ci.org/neptune-ml/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-tensorboard)
+[![Build Status](https://travis-ci.org/neptune-ai/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-tensorboard)
 
 ![TensorBoard neptune.ai integration](docs/_static/tensorboard_neptuneml.png)
 
@@ -79,7 +79,7 @@ If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
  * [neptune-tensorboard docs](https://docs.neptune.ai/integrations/tensorboard.html)
- * [github issues](https://github.com/neptune-ml/neptune-tensorboard/issues)
+ * [github issues](https://github.com/neptune-ai/neptune-tensorboard/issues)
  * [neptune community spectrum](https://spectrum.chat/neptune-community)
 
 # Contributing
