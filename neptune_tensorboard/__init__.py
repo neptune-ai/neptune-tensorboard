@@ -16,9 +16,9 @@
 import neptune
 
 
-def integrate_with_tensorflow():
+def integrate_with_tensorflow(prefix=False):
     from neptune_tensorboard.integration.tensorflow_integration import integrate_with_tensorflow as integration
-    integration(neptune.get_experiment)
+    integration(neptune.get_experiment, prefix)
 
 
 def integrate_with_keras():
