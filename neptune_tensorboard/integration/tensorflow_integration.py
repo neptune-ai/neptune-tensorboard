@@ -50,12 +50,11 @@ class TensorflowIntegrator(object):
 
     # pylint:disable=protected-access
     def get_channel_name(self, writer, name):
-        if self._prefix:
-            if writer is not None:
-                log = writer.event_writer._logdir
-                writer_name = os.path.split(log)[1]
-                if writer_name:
-                    return writer_name + "_" + name
+        if self._prefix and writer is not None:
+            log = writer.event_writer._logdir
+            writer_name = os.path.split(log)[1]
+            if writer_name:
+                return writer_name + "_" + name
         return name
 
     def add_summary(self, writer, summary, global_step=None):
@@ -223,7 +222,6 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
     _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
 
     def _log_metrics(instance, logs, prefix, step):
-        print(logs)
         exp = experiment_getter()
         for (name, value) in logs.items():
             if name in ('batch', 'size', 'num_steps'):
