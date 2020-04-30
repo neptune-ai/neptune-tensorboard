@@ -68,7 +68,7 @@ class TensorflowDataSync(object):
                                                  run_monitoring_thread=False,
                                                  handle_uncaught_exceptions=True,
                                                  hostname=hostname or None) as exp:
-                tf_integrator = TensorflowIntegrator(lambda *args: exp)
+                tf_integrator = TensorflowIntegrator(False, lambda *args: exp)
                 self._load_single_file(exp, path, tf_integrator)
             click.echo("{} was saved as {}".format(run_path, exp.id))
         else:
