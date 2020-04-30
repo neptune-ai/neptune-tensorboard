@@ -39,14 +39,7 @@ class TensorflowDataSync(object):
     def run(self):
         for root, _, run_files in os.walk(self._path):
             for run_file in run_files:
-                try:
                     self._load_single_run(os.path.join(root, run_file))
-                except Exception as e:
-                    print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
-                    try:
-                        traceback.print_exc(e)
-                    except:  # pylint: disable=bare-except
-                        pass
 
     def _load_single_run(self, path):
         click.echo("Loading {}...".format(path))
@@ -68,7 +61,7 @@ class TensorflowDataSync(object):
                                                  run_monitoring_thread=False,
                                                  handle_uncaught_exceptions=True,
                                                  hostname=hostname or None) as exp:
-                tf_integrator = TensorflowIntegrator(lambda *args: exp)
+                tf_integrator = TensorflowIntegrator(False, lambda *args: exp)
                 self._load_single_file(exp, path, tf_integrator)
             click.echo("{} was saved as {}".format(run_path, exp.id))
         else:
