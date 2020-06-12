@@ -31,9 +31,12 @@ def integrate_with_keras(experiment_getter):
 
 def _integrate_with_keras(experiment_getter):
     try:
-        import keras
+        import tensorflow.keras
     except ImportError:
-        raise LibraryNotInstalled('keras')
+        try:
+            import keras
+        except ImportError:
+            raise LibraryNotInstalled('keras')
 
     from keras.callbacks import BaseLogger, Callback  # pylint:disable=import-error
 

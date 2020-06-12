@@ -107,3 +107,6 @@ venv.bak/
 
 # Pycharm
 .idea/
+
+# VSCode
+.history/
