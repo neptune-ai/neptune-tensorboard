@@ -31,14 +31,16 @@ def integrate_with_keras(experiment_getter):
 
 def _integrate_with_keras(experiment_getter):
     try:
-        import tensorflow.keras
+        # pylint:disable=import-error
+        import keras
+        from keras.callbacks import BaseLogger, Callback
     except ImportError:
         try:
-            import keras
+            # pylint:disable=import-error
+            import tensorflow.keras as keras
+            from tensorflow.keras.callbacks import BaseLogger, Callback
         except ImportError:
             raise LibraryNotInstalled('keras')
-
-    from keras.callbacks import BaseLogger, Callback  # pylint:disable=import-error
 
     class NeptuneLogger(Callback):
 
