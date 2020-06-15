@@ -34,11 +34,14 @@ def _integrate_with_keras(experiment_getter):
         # pylint:disable=import-error
         import keras
         from keras.callbacks import BaseLogger, Callback
+        through_tensorflow = False
     except ImportError:
         try:
             # pylint:disable=import-error
-            import tensorflow.keras as keras
+            import tensorflow
+            from tensorflow import keras
             from tensorflow.keras.callbacks import BaseLogger, Callback
+            through_tensorflow = True
         except ImportError:
             raise LibraryNotInstalled('keras')
 
@@ -116,4 +119,7 @@ def _integrate_with_keras(experiment_getter):
         return KerasAggregateCallback(BaseLogger(*args, **kwargs),
                                       NeptuneLogger(experiment_getter=experiment_getter))
 
-    keras.callbacks.BaseLogger = monkey_patched_BaseLogger
+    if through_tensorflow:
+        tensorflow.keras.callbacks.BaseLogger = monkey_patched_BaseLogger
+    else:
+        keras.callbacks.BaseLogger = monkey_patched_BaseLogger
