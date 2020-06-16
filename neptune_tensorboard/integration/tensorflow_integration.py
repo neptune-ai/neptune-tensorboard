@@ -27,7 +27,7 @@ from neptune.exceptions import NeptuneException
 from pkg_resources import parse_version
 try:
     from tensorflow_core.core.framework import summary_pb2  # pylint:disable=no-name-in-module
-except Exception as ignore:
+except ImportError as ignore:
     from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
 
 _integrated_with_tensorflow = False
@@ -169,7 +169,11 @@ def _patch_tensorflow_1x(tensorflow_integrator):
 
 
 def _patch_tensorflow_2x(experiment_getter, prefix):
-    import tensorflow_core.python.ops.summary_ops_v2 as summary_ops_v2
+    try:
+        from tensorflow.python.ops import summary_ops_v2
+    except ImportError:
+        # support TF<2.2
+        from tensorflow_core.python.ops import summary_ops_v2
 
     # pylint:disable=protected-access
     def get_channel_name(name):
