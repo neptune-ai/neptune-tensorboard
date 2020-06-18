@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from neptune_tensorboard.internal.deprecations import deprecated
+
 from neptune.exceptions import LibraryNotInstalled, NeptuneException
 
 _integrated_with_keras = False
 
-
+@deprecated('Please use Keras integration from the `neptune-contrib` package instead')
 def integrate_with_keras(experiment_getter):
     global _integrated_with_keras  # pylint:disable=global-statement
 
