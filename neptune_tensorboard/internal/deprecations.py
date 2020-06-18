@@ -10,15 +10,13 @@ class deprecated:
         self.message = message
 
     def __call__(self, func):
-      @functools.wraps(func)
-      def new_func(*args, **kwargs):
-          message = "Call to deprecated function {}. {}".format(func.__name__, self.message)
-          warnings.simplefilter('always', DeprecationWarning)  # turn off filter
-          warnings.warn(message,
-                        category=DeprecationWarning,
-                        stacklevel=2)
-          warnings.simplefilter('default', DeprecationWarning)  # reset filter
-          return func(*args, **kwargs)
-      return new_func
-      
-    
+        @functools.wraps(func)
+        def new_func(*args, **kwargs):
+            message = "Call to deprecated function {}. {}".format(func.__name__, self.message)
+            warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+            warnings.warn(message,
+                          category=DeprecationWarning,
+                          stacklevel=2)
+            warnings.simplefilter('default', DeprecationWarning)  # reset filter
+            return func(*args, **kwargs)
+        return new_func

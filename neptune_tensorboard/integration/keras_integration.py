@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from neptune_tensorboard.internal.deprecations import deprecated
-
 from neptune.exceptions import LibraryNotInstalled, NeptuneException
+
+from neptune_tensorboard.internal.deprecations import deprecated
 
 _integrated_with_keras = False
 
