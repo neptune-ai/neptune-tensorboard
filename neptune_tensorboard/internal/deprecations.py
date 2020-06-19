@@ -17,7 +17,7 @@
 import warnings
 import functools
 
-class deprecated:
+class deprecated(object):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
     when the function is used."""
