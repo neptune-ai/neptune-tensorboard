@@ -48,13 +48,33 @@ class TensorflowDataSync(object):
                     except:  # pylint: disable=bare-except
                         pass
 
+    def _does_file_describe_experiment_run(self, path):
+        accumulator = NeptuneEventAccumulator(path)
+        accumulator.Reload()
+        try:
+            accumulator.FirstEventTimestamp()
+        except ValueError:
+            return False
+        return True
+
+    def _new_accumulator(self, path, experiment):
+        return NeptuneEventAccumulator(path, size_guidance={
+            COMPRESSED_HISTOGRAMS: 0,
+            IMAGES: experiment.limits['channels']['image'],
+            AUDIO: 0,
+            SCALARS: experiment.limits['channels']['numeric'],
+            HISTOGRAMS: 0,
+            TENSORS: experiment.limits['channels']['text']
+        })
+
     def _load_single_run(self, path):
-        click.echo("Loading {}...".format(path))
         run_path = os.path.relpath(path, self._path)
         run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path).lower()
         exp_name = parse_path_to_experiment_name(run_path)
         hostname = parse_path_to_hostname(run_path)
         if not self._experiment_exists(run_id, exp_name):
+            if not self._does_file_describe_experiment_run(path):
+                return
             with self._project.create_experiment(name=exp_name,
                                                  properties={
                                                      'tf/run/path': run_path
@@ -68,8 +88,10 @@ class TensorflowDataSync(object):
                                                  run_monitoring_thread=False,
                                                  handle_uncaught_exceptions=True,
                                                  hostname=hostname or None) as exp:
+                click.echo("Loading {}...".format(path))
+                accumulator = self._new_accumulator(path, exp)
                 tf_integrator = TensorflowIntegrator(False, lambda *args: exp)
-                self._load_single_file(exp, path, tf_integrator)
+                self._load_single_file(accumulator, tf_integrator)
             click.echo("{} was saved as {}".format(run_path, exp.id))
         else:
             click.echo("{} is already synced".format(run_path))
@@ -79,15 +101,7 @@ class TensorflowDataSync(object):
         return any(exp.name == run_path and exp.state == 'succeeded' for exp in existing_experiments)
 
     @staticmethod
-    def _load_single_file(experiment, path, tf_integrator):
-        accumulator = NeptuneEventAccumulator(path, size_guidance={
-            COMPRESSED_HISTOGRAMS: 0,
-            IMAGES: experiment.limits['channels']['image'],
-            AUDIO: 0,
-            SCALARS: experiment.limits['channels']['numeric'],
-            HISTOGRAMS: 0,
-            TENSORS: experiment.limits['channels']['text']
-        })
+    def _load_single_file(accumulator, tf_integrator):
 
         accumulator.Reload()
 
