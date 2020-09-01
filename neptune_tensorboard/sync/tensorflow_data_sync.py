@@ -103,6 +103,8 @@ class TensorflowDataSync(object):
     @staticmethod
     def _load_single_file(accumulator, tf_integrator):
 
+        accumulator.Reload()
+
         tags = accumulator.Tags()
 
         # load scalars
