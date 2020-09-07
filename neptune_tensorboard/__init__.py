@@ -22,7 +22,7 @@ def integrate_with_tensorflow(prefix=False):
 
 
 def integrate_with_keras():
-    msg = """integrate_with_keras() was removed in neptune-tensorboard > 0.3.14. 
+    msg = """integrate_with_keras() was removed in neptune-tensorboard > 0.3.14.
     You should use NeptuneMonitor() callback from neptunecontrib.monitoring.keras instead.
     Read about it here https://docs.neptune.ai/integrations/keras.html"""
     raise Exception(msg)
