@@ -151,7 +151,7 @@ def _integrate_with_tensorflow(experiment_getter, prefix=False):
     except AttributeError:
         pass
 
-    raise ValueError("Unsupported tensorflow version")
+    raise ValueError("Unsupported tensorflow version: {}".format(tf.version.VERSION))
 
 
 # pylint: disable=no-member, protected-access, no-name-in-module, import-error
