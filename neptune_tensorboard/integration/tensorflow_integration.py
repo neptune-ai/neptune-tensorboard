@@ -148,8 +148,9 @@ def _integrate_with_tensorflow(experiment_getter, prefix=False):
             return _patch_tensorflow_1x(tensorflow_integrator)
 
     except AttributeError:
-        raise Exception("Unrecognized tensorflow version: {}. ".format(version) + 
-            "Please consider upgrading your neptune-client and neptune-tensorboard libraries")
+        message = ("Unrecognized tensorflow version: {}. Please consider "
+                   "upgrading your neptune-client and neptune-tensorboard libraries")
+        raise Exception(message.format(version))
 
 
 # pylint: disable=no-member, protected-access, no-name-in-module, import-error
