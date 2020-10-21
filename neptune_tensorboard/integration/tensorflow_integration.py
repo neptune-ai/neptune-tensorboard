@@ -137,21 +137,20 @@ def _integrate_with_tensorflow(experiment_getter, prefix=False):
     tensorflow_integrator = TensorflowIntegrator(experiment_getter=experiment_getter, prefix=prefix)
 
     try:
+        version = "<unknown>"
+
         # noinspection PyUnresolvedReferences
         version = parse_version(tf.version.VERSION)
 
-        # Tensorflow 2.x
         if version >= parse_version('2.0.0-rc0'):
             return _patch_tensorflow_2x(experiment_getter, prefix)
-
-        # Tensorflow 1.x
-        if version >= parse_version('1.0.0'):
+        elif version >= parse_version('1.0.0'):
             return _patch_tensorflow_1x(tensorflow_integrator)
 
     except AttributeError:
-        pass
-
-    raise ValueError("Unsupported tensorflow version")
+        message = ("Unrecognized tensorflow version: {}. Please consider "
+                   "upgrading your neptune-client and neptune-tensorboard libraries")
+        raise Exception(message.format(version))
 
 
 # pylint: disable=no-member, protected-access, no-name-in-module, import-error
@@ -223,15 +222,37 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
     tf.summary.text = text
     tf.summary._original_no_neptune_text = _text
 
-    _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
+    # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
+    # and changes its parameters. The conditional below handles both versions.
+    if hasattr(tf.keras.callbacks.TensorBoard, '_log_metrics'):
 
-    def _log_metrics(instance, logs, prefix, step):
-        exp = experiment_getter()
-        for (name, value) in logs.items():
-            if name in ('batch', 'size', 'num_steps'):
-                continue
-            exp.log_metric(get_channel_name(name), x=step, y=value)
+        _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
 
-        _tb_log_metrics(instance, logs, prefix, step)
+        def _log_metrics(instance, logs, prefix, step):
+            exp = experiment_getter()
+            for (name, value) in logs.items():
+                if name in ('batch', 'size', 'num_steps'):
+                    continue
+                exp.log_metric(get_channel_name(name), x=step, y=value)
 
-    tf.keras.callbacks.TensorBoard._log_metrics = _log_metrics
+            _tb_log_metrics(instance, logs, prefix, step)
+
+        tf.keras.callbacks.TensorBoard._log_metrics = _log_metrics
+
+    elif hasattr(tf.keras.callbacks.TensorBoard, '_log_epoch_metrics'):
+
+        _tb_log_epoch_metrics = tf.keras.callbacks.TensorBoard._log_epoch_metrics
+
+        def _log_epoch_metrics(instance, epoch, logs):
+            exp = experiment_getter()
+            for (name, value) in logs.items():
+                if name in ('batch', 'size', 'num_steps'):
+                    continue
+                exp.log_metric(get_channel_name(name), x=epoch, y=value)
+
+            _tb_log_epoch_metrics(instance, epoch, logs)
+
+        tf.keras.callbacks.TensorBoard._log_epoch_metrics = _log_epoch_metrics
+
+    else:
+        raise AttributeError('Unsupported Tensorflow version')
