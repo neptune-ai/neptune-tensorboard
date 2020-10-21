@@ -221,6 +221,8 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
     tf.summary.text = text
     tf.summary._original_no_neptune_text = _text
 
+    # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
+    # and changes its parameters. The conditional below handles both versions.
     if hasattr(tf.keras.callbacks.TensorBoard, '_log_metrics'):
 
         _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
