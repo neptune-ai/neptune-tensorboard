@@ -25,6 +25,7 @@ from PIL import Image
 from future.builtins import object
 from neptune.exceptions import NeptuneException
 from pkg_resources import parse_version
+
 try:
     from tensorflow_core.core.framework import summary_pb2  # pylint:disable=no-name-in-module
 except ImportError as ignore:
@@ -204,7 +205,20 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
     def image(name, data, step=None, max_outputs=3, description=None):
         if step is None:
             step = tf.summary.experimental.get_step()
-        experiment_getter().log_image(get_channel_name(name), x=step, y=data, description=description)
+        # expecting 2 or 3 dimensional tensor. If tensor is 4-dimentional,
+        # as in https://www.tensorflow.org/api_docs/python/tf/summary/image
+        # iterate over first dimension to send all images
+        shape = tf.shape(data)
+        if len(shape) >= 4:
+            for num in range(0, shape[0]):
+                current_step = step + float(num) / (int(shape[0]) + 1)
+                experiment_getter().log_image(
+                    get_channel_name(name),
+                    x=current_step,
+                    y=data[num],
+                    description=description)
+        else:
+            experiment_getter().log_image(get_channel_name(name), x=step, y=data, description=description)
         _image(name, data, step, max_outputs, description)
 
     def text(name, data, step=None, description=None):
