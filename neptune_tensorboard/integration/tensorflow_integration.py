@@ -211,7 +211,7 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
         shape = tf.shape(data)
         if len(shape) >= 4:
             for num in range(0, shape[0]):
-                current_step = step + float(num) / (shape[0] + 1)
+                current_step = step + float(num) / (int(shape[0]) + 1)
                 experiment_getter().log_image(
                     get_channel_name(name),
                     x=current_step,
