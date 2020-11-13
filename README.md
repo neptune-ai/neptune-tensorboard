@@ -10,13 +10,25 @@ Enjoy tracking from `TensorBoard` with organization and collaboration of `Neptun
 
 With `neptune-tensorboard` you can have your `TensorBoard` experiment runs hosted in a beautiful knowledge repo that lets you invite and manage project contributors. 
 
-All you need to do is go to your command line and run:
+All you need to do to convert your past runs from TensorBoard logdir is run:
 
-```
+```bash
 neptune tensorboard /path/to/logdir --project USER_NAME/PROJECT_NAME
 ```
 
-and you have your [experiments](https://ui.neptune.ai/jakub-czakon/tensorboard-integration/experiments?filterId=bcef6881-128a-4126-a582-31b179bebf67) hosted on Neptune:
+You can connect Neptune to your TensorBoard and log all future experiments by adding the following to your scripts: 
+
+```python
+import neptune
+import neptune_tensorboard as neptune_tb
+
+neptune.init(api_token='YOUR_TOKEN', project_qualified_name='USER_NAME/PROJECT_NAME') # credentials
+neptune_tb.integrate_with_tensorflow()
+
+neptune.create_experiment()
+```
+
+You will have your [experiments](https://ui.neptune.ai/jakub-czakon/tensorboard-integration/experiments?filterId=bcef6881-128a-4126-a582-31b179bebf67) hosted on Neptune:
 
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/9412c0124439f34b42737a7f3760849761c42dc4/tensorboard_1.png)
 
