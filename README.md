@@ -76,6 +76,20 @@ pip install neptune-tensorboard
 neptune tensorboard /path/to/logdir --project USER_NAME/PROJECT_NAME
 ```
 
+## Connect Neptune to TensorBoard to log future runs
+
+You can connect Neptune to your TensorBoard and log all future experiments by adding the following to your scripts: 
+
+```python
+import neptune
+import neptune_tensorboard as neptune_tb
+
+neptune.init(api_token='YOUR_TOKEN', project_qualified_name='USER_NAME/PROJECT_NAME') # credentials
+neptune_tb.integrate_with_tensorflow()
+
+neptune.create_experiment()
+```
+
 ## Explore and Share
 You can now explore and organize your experiments in Neptune:
 
