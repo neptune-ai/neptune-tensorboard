@@ -37,7 +37,13 @@ def main():
         setup(
             name='neptune-tensorboard',
             version=version(),
-            url='https://github.com/neptune-ai/neptune-tensorboard',
+            url="https://neptune.ai/",
+            project_urls={
+                'Tracker': 'https://github.com/neptune-ai/neptune-tensorboard/issues',
+                'Source': 'https://github.com/neptune-ai/neptune-tensorboard',
+                'Documentation':
+                    'https://docs.neptune.ai/integrations-and-supported-tools/experiment-tracking/tensorboard',
+            },
             license='Apache License 2.0',
             author='neptune.ai',
             author_email='contact@neptune.ai',
@@ -54,24 +60,25 @@ def main():
             },
             classifiers=[
                 # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-                # 'Development Status :: 1 - Planning',
-                # 'Development Status :: 2 - Pre-Alpha',
-                # 'Development Status :: 3 - Alpha',
                 'Development Status :: 4 - Beta',
-                # 'Development Status :: 5 - Production/Stable',
-                # 'Development Status :: 6 - Mature',
-                # 'Development Status :: 7 - Inactive',
+                # 'Development Status :: 5 - Production/Stable',  # Switch to Stable when applicable
                 'Environment :: Console',
                 'Intended Audience :: Developers',
+                'Intended Audience :: Science/Research',
                 'License :: OSI Approved :: Apache Software License',
-                'Operating System :: POSIX',
+                'Natural Language :: English',
                 'Operating System :: MacOS',
-                'Operating System :: Unix',
                 'Operating System :: Microsoft :: Windows',
-                'Programming Language :: Python',
-                'Programming Language :: Python :: 2',
+                'Operating System :: POSIX',
+                'Operating System :: Unix',
                 'Programming Language :: Python :: 3',
+                'Programming Language :: Python :: 3.6',
+                'Programming Language :: Python :: 3.7',
+                'Programming Language :: Python :: 3.8',
+                'Programming Language :: Python :: 3.9',
                 'Topic :: Software Development :: Libraries :: Python Modules',
+                'Programming Language :: Python :: Implementation :: CPython',
+                'Topic :: Scientific/Engineering :: Artificial Intelligence',
             ]
         )
 
