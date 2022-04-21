@@ -197,6 +197,10 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
     _image = tf.summary.image
 
     def scalar(name, data, step=None, description=None):
+        # Skip Tensor values
+        if (tf.is_tensor(step) or tf.is_tensor(data)):
+            return
+
         if step is None:
             step = tf.summary.experimental.get_step()
         experiment_getter().log_metric(get_channel_name(name), x=step, y=data)
