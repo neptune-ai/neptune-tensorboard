@@ -37,7 +37,7 @@ and easily [sharebale](https://ui.neptune.ai/jakub-czakon/tensorboard-integratio
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/9412c0124439f34b42737a7f3760849761c42dc4/tensorboard_2.png)
 
 # Documentation
-See [neptune-tensorboard docs](https://docs.neptune.ai/integrations/tensorboard.html) for more info.
+See [neptune-tensorboard docs](https://docs.neptune.ai/integrations-and-supported-tools/experiment-tracking/tensorboard) for more info.
 
 # Get started
 
@@ -104,7 +104,7 @@ or invite people to your project if you want to keep it private!
 If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
- * [neptune-tensorboard docs](https://docs.neptune.ai/integrations/tensorboard.html)
+ * [neptune-tensorboard docs](https://docs.neptune.ai/integrations-and-supported-tools/experiment-tracking/tensorboard)
  * [github issues](https://github.com/neptune-ai/neptune-tensorboard/issues)
  * [neptune community spectrum](https://spectrum.chat/neptune-community)
 
