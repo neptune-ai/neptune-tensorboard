@@ -18,7 +18,6 @@ from tensorboard.backend.event_processing.event_accumulator import EventAccumula
 
 
 class NeptuneEventAccumulator(EventAccumulator):
-
     def _ProcessTensor(self, tag, wall_time, step, tensor):
         if tensor.dtype == tf.string:
             # noinspection PyProtectedMember,PyUnresolvedReferences

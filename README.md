@@ -8,7 +8,7 @@
 `neptune-tensorboard` integrates `TensorBoard` with `Neptune` to let you get the best of both worlds.
 Enjoy tracking from `TensorBoard` with organization and collaboration of `Neptune`.
 
-With `neptune-tensorboard` you can have your `TensorBoard` experiment runs hosted in a beautiful knowledge repo that lets you invite and manage project contributors. 
+With `neptune-tensorboard` you can have your `TensorBoard` experiment runs hosted in a beautiful knowledge repo that lets you invite and manage project contributors.
 
 All you need to do to convert your past runs from TensorBoard logdir is run:
 
@@ -16,7 +16,7 @@ All you need to do to convert your past runs from TensorBoard logdir is run:
 neptune tensorboard /path/to/logdir --project USER_NAME/PROJECT_NAME
 ```
 
-You can connect Neptune to your TensorBoard and log all future experiments by adding the following to your scripts: 
+You can connect Neptune to your TensorBoard and log all future experiments by adding the following to your scripts:
 
 ```python
 import neptune
@@ -78,7 +78,7 @@ neptune tensorboard /path/to/logdir --project USER_NAME/PROJECT_NAME
 
 ## Connect Neptune to TensorBoard to log future runs
 
-You can connect Neptune to your TensorBoard and log all future experiments by adding the following to your scripts: 
+You can connect Neptune to your TensorBoard and log all future experiments by adding the following to your scripts:
 
 ```python
 import neptune

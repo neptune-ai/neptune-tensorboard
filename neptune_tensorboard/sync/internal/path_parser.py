@@ -47,10 +47,10 @@ def parse_path_to_hostname(path):
     """
     file_name = os.path.basename(path)
     if file_name.startswith(_EVENTS_FILE_PREFIX):
-        timestamp_and_hostname = file_name[len(_EVENTS_FILE_PREFIX):]
-        separator_index = timestamp_and_hostname.find('.')
+        timestamp_and_hostname = file_name[len(_EVENTS_FILE_PREFIX) :]
+        separator_index = timestamp_and_hostname.find(".")
         if separator_index >= 0:
-            return timestamp_and_hostname[(separator_index + 1):]
+            return timestamp_and_hostname[(separator_index + 1) :]
         else:
             return None
     else:

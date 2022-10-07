@@ -17,13 +17,13 @@ from __future__ import unicode_literals
 
 import io
 import os
-import time
 import sys
+import time
 
 import tensorflow as tf
-from PIL import Image
 from future.builtins import object
 from neptune.exceptions import NeptuneException
+from PIL import Image
 from pkg_resources import parse_version
 
 try:
@@ -44,7 +44,6 @@ def integrate_with_tensorflow(experiment_getter, prefix=False):
 
 
 class TensorflowIntegrator(object):
-
     def __init__(self, prefix=False, experiment_getter=None):
         self._experiment_holder = experiment_getter
         self._prefix = prefix
@@ -73,54 +72,53 @@ class TensorflowIntegrator(object):
                 pass
 
     def add_value(self, x, value, writer):
-        field = value.WhichOneof('value')
+        field = value.WhichOneof("value")
 
-        if field == 'simple_value':
-            self.send_numeric(tag=self.get_channel_name(writer, value.tag),
-                              step=x,
-                              value=value.simple_value,
-                              wall_time=time.time())
+        if field == "simple_value":
+            self.send_numeric(
+                tag=self.get_channel_name(writer, value.tag), step=x, value=value.simple_value, wall_time=time.time()
+            )
             return
 
-        if field == 'image':
-            self.send_image(tag=self.get_channel_name(writer, value.tag),
-                            step=x,
-                            encoded_image_string=value.image.encoded_image_string,
-                            wall_time=time.time())
+        if field == "image":
+            self.send_image(
+                tag=self.get_channel_name(writer, value.tag),
+                step=x,
+                encoded_image_string=value.image.encoded_image_string,
+                wall_time=time.time(),
+            )
             return
 
-        if field == 'tensor' and value.tensor.dtype == tf.string:
+        if field == "tensor" and value.tensor.dtype == tf.string:
             string_values = []
             for _ in range(0, len(value.tensor.string_val)):
                 string_value = value.tensor.string_val.pop()
                 string_values.append(string_value.decode("utf-8"))
 
-            self.send_text(tag=self.get_channel_name(writer, value.tag),
-                           step=x,
-                           text=", ".join(string_values),
-                           wall_time=time.time())
+            self.send_text(
+                tag=self.get_channel_name(writer, value.tag),
+                step=x,
+                text=", ".join(string_values),
+                wall_time=time.time(),
+            )
             return
 
     def send_numeric(self, tag, step, value, wall_time):
-        self._experiment_holder().send_metric(channel_name=tag,
-                                              x=step,
-                                              y=value,
-                                              timestamp=wall_time)
+        self._experiment_holder().send_metric(channel_name=tag, x=step, y=value, timestamp=wall_time)
 
     def send_image(self, tag, step, encoded_image_string, wall_time):
         image_desc = "({}. Step {})".format(tag, step)
-        self._experiment_holder().send_image(channel_name=tag,
-                                             x=step,
-                                             y=Image.open(io.BytesIO(encoded_image_string)),
-                                             name=image_desc,
-                                             description=image_desc,
-                                             timestamp=wall_time)
+        self._experiment_holder().send_image(
+            channel_name=tag,
+            x=step,
+            y=Image.open(io.BytesIO(encoded_image_string)),
+            name=image_desc,
+            description=image_desc,
+            timestamp=wall_time,
+        )
 
     def send_text(self, tag, step, text, wall_time):
-        self._experiment_holder().send_text(channel_name=tag,
-                                            x=step,
-                                            y=text,
-                                            timestamp=wall_time)
+        self._experiment_holder().send_text(channel_name=tag, x=step, y=text, timestamp=wall_time)
 
     @staticmethod
     def get_writer_name(log_dir):
@@ -143,14 +141,16 @@ def _integrate_with_tensorflow(experiment_getter, prefix=False):
         # noinspection PyUnresolvedReferences
         version = parse_version(tf.version.VERSION)
 
-        if version >= parse_version('2.0.0-rc0'):
+        if version >= parse_version("2.0.0-rc0"):
             return _patch_tensorflow_2x(experiment_getter, prefix)
-        elif version >= parse_version('1.0.0'):
+        elif version >= parse_version("1.0.0"):
             return _patch_tensorflow_1x(tensorflow_integrator)
 
     except AttributeError:
-        message = ("Unrecognized tensorflow version: {}. Please consider "
-                   "upgrading your neptune-client and neptune-tensorboard libraries")
+        message = (
+            "Unrecognized tensorflow version: {}. Please consider "
+            "upgrading your neptune-client and neptune-tensorboard libraries"
+        )
         raise Exception(message.format(version))
 
 
@@ -179,14 +179,14 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
     def get_channel_name(name):
         if prefix:
             context = summary_ops_v2.context.context()
-            if hasattr(context, 'summary_writer'):
+            if hasattr(context, "summary_writer"):
                 writer = context.summary_writer
-            elif 'tensorflow.python.ops.summary_ops_v2' in sys.modules:
-                writer = sys.modules['tensorflow.python.ops.summary_ops_v2']._summary_state.writer
+            elif "tensorflow.python.ops.summary_ops_v2" in sys.modules:
+                writer = sys.modules["tensorflow.python.ops.summary_ops_v2"]._summary_state.writer
             else:
                 writer = None
             if writer is not None:
-                log = str(writer._init_op_fn.keywords['logdir']._numpy(), "utf-8")
+                log = str(writer._init_op_fn.keywords["logdir"]._numpy(), "utf-8")
                 writer_name = os.path.split(log)[1]
                 if writer_name:
                     return writer_name + "_" + name
@@ -213,10 +213,8 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
             for num in range(0, shape[0]):
                 current_step = step + float(num) / (int(shape[0]) + 1)
                 experiment_getter().log_image(
-                    get_channel_name(name),
-                    x=current_step,
-                    y=data[num],
-                    description=description)
+                    get_channel_name(name), x=current_step, y=data[num], description=description
+                )
         else:
             experiment_getter().log_image(get_channel_name(name), x=step, y=data, description=description)
         _image(name, data, step, max_outputs, description)
@@ -238,14 +236,14 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
 
     # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
     # and changes its parameters. The conditional below handles both versions.
-    if hasattr(tf.keras.callbacks.TensorBoard, '_log_metrics'):
+    if hasattr(tf.keras.callbacks.TensorBoard, "_log_metrics"):
 
         _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
 
         def _log_metrics(instance, logs, prefix, step):
             exp = experiment_getter()
             for (name, value) in logs.items():
-                if name in ('batch', 'size', 'num_steps'):
+                if name in ("batch", "size", "num_steps"):
                     continue
                 exp.log_metric(get_channel_name(name), x=step, y=value)
 
@@ -253,14 +251,14 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
 
         tf.keras.callbacks.TensorBoard._log_metrics = _log_metrics
 
-    elif hasattr(tf.keras.callbacks.TensorBoard, '_log_epoch_metrics'):
+    elif hasattr(tf.keras.callbacks.TensorBoard, "_log_epoch_metrics"):
 
         _tb_log_epoch_metrics = tf.keras.callbacks.TensorBoard._log_epoch_metrics
 
         def _log_epoch_metrics(instance, epoch, logs):
             exp = experiment_getter()
             for (name, value) in logs.items():
-                if name in ('batch', 'size', 'num_steps'):
+                if name in ("batch", "size", "num_steps"):
                     continue
                 exp.log_metric(get_channel_name(name), x=epoch, y=value)
 
@@ -269,4 +267,4 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
         tf.keras.callbacks.TensorBoard._log_epoch_metrics = _log_epoch_metrics
 
     else:
-        raise AttributeError('Unsupported Tensorflow version')
+        raise AttributeError("Unsupported Tensorflow version")
