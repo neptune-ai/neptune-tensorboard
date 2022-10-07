@@ -22,16 +22,24 @@ import traceback
 import click
 import tensorflow as tf
 from future.moves import sys
-from tensorboard.backend.event_processing.event_accumulator import COMPRESSED_HISTOGRAMS, IMAGES, \
-    AUDIO, SCALARS, HISTOGRAMS, TENSORS
+from tensorboard.backend.event_processing.event_accumulator import (
+    AUDIO,
+    COMPRESSED_HISTOGRAMS,
+    HISTOGRAMS,
+    IMAGES,
+    SCALARS,
+    TENSORS,
+)
 
 from neptune_tensorboard.integration.tensorflow_integration import TensorflowIntegrator
 from neptune_tensorboard.sync.internal.events_loader import NeptuneEventAccumulator
-from neptune_tensorboard.sync.internal.path_parser import parse_path_to_experiment_name, parse_path_to_hostname
+from neptune_tensorboard.sync.internal.path_parser import (
+    parse_path_to_experiment_name,
+    parse_path_to_hostname,
+)
 
 
 class TensorflowDataSync(object):
-
     def __init__(self, project, path):
         self._project = project
         self._path = path
@@ -58,36 +66,39 @@ class TensorflowDataSync(object):
         return True
 
     def _new_accumulator(self, path, experiment):
-        return NeptuneEventAccumulator(path, size_guidance={
-            COMPRESSED_HISTOGRAMS: 0,
-            IMAGES: experiment.limits['channels']['image'],
-            AUDIO: 0,
-            SCALARS: experiment.limits['channels']['numeric'],
-            HISTOGRAMS: 0,
-            TENSORS: experiment.limits['channels']['text']
-        })
+        return NeptuneEventAccumulator(
+            path,
+            size_guidance={
+                COMPRESSED_HISTOGRAMS: 0,
+                IMAGES: experiment.limits["channels"]["image"],
+                AUDIO: 0,
+                SCALARS: experiment.limits["channels"]["numeric"],
+                HISTOGRAMS: 0,
+                TENSORS: experiment.limits["channels"]["text"],
+            },
+        )
 
     def _load_single_run(self, path):
         run_path = os.path.relpath(path, self._path)
-        run_id = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path).lower()
+        run_id = re.sub(r"[^0-9A-Za-z_\-]", "_", run_path).lower()
         exp_name = parse_path_to_experiment_name(run_path)
         hostname = parse_path_to_hostname(run_path)
         if not self._experiment_exists(run_id, exp_name):
             if not self._does_file_describe_experiment_run(path):
                 return
-            with self._project.create_experiment(name=exp_name,
-                                                 properties={
-                                                     'tf/run/path': run_path
-                                                 },
-                                                 tags=[run_id],
-                                                 upload_source_files=[],
-                                                 abort_callback=lambda *args: None,
-                                                 upload_stdout=False,
-                                                 upload_stderr=False,
-                                                 send_hardware_metrics=False,
-                                                 run_monitoring_thread=False,
-                                                 handle_uncaught_exceptions=True,
-                                                 hostname=hostname or None) as exp:
+            with self._project.create_experiment(
+                name=exp_name,
+                properties={"tf/run/path": run_path},
+                tags=[run_id],
+                upload_source_files=[],
+                abort_callback=lambda *args: None,
+                upload_stdout=False,
+                upload_stderr=False,
+                send_hardware_metrics=False,
+                run_monitoring_thread=False,
+                handle_uncaught_exceptions=True,
+                hostname=hostname or None,
+            ) as exp:
                 click.echo("Loading {}...".format(path))
                 accumulator = self._new_accumulator(path, exp)
                 tf_integrator = TensorflowIntegrator(False, lambda *args: exp)
@@ -98,7 +109,7 @@ class TensorflowDataSync(object):
 
     def _experiment_exists(self, run_id, run_path):
         existing_experiments = self._project.get_experiments(tag=run_id)
-        return any(exp.name == run_path and exp.state == 'succeeded' for exp in existing_experiments)
+        return any(exp.name == run_path and exp.state == "succeeded" for exp in existing_experiments)
 
     @staticmethod
     def _load_single_file(accumulator, tf_integrator):
@@ -110,20 +121,14 @@ class TensorflowDataSync(object):
         # load scalars
         for tag in tags[SCALARS]:
             for event in accumulator.Scalars(tag):
-                tf_integrator.send_numeric(
-                    tag=tag,
-                    step=event.step,
-                    value=event.value,
-                    wall_time=event.wall_time)
+                tf_integrator.send_numeric(tag=tag, step=event.step, value=event.value, wall_time=event.wall_time)
 
         # load images
         for tag in tags[IMAGES]:
             for event in accumulator.Images(tag):
                 tf_integrator.send_image(
-                    tag=tag,
-                    step=event.step,
-                    encoded_image_string=event.encoded_image_string,
-                    wall_time=event.wall_time)
+                    tag=tag, step=event.step, encoded_image_string=event.encoded_image_string, wall_time=event.wall_time
+                )
 
         # load tensors (actually only strings, see: NeptuneEventAccumulator._ProcessTensor)
         for tag in tags[TENSORS]:
@@ -138,7 +143,5 @@ class TensorflowDataSync(object):
                         pass
 
                 tf_integrator.send_text(
-                    tag=tag,
-                    step=event.step,
-                    text=', '.join(string_values),
-                    wall_time=event.wall_time)
+                    tag=tag, step=event.step, text=", ".join(string_values), wall_time=event.wall_time
+                )
