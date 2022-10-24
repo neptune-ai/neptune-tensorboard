@@ -53,7 +53,8 @@ class TensorflowDataSync(object):
                     print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
                     try:
                         traceback.print_exc(e)
-                    except:  # pylint: disable=bare-except
+                    except:  # noqa: E722
+                        # pylint: disable=bare-except
                         pass
 
     def _does_file_describe_experiment_run(self, path):

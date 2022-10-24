@@ -28,7 +28,7 @@ from pkg_resources import parse_version
 
 try:
     from tensorflow_core.core.framework import summary_pb2  # pylint:disable=no-name-in-module
-except ImportError as ignore:
+except ImportError:
     from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
 
 _integrated_with_tensorflow = False
