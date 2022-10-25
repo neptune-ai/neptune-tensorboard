@@ -44,7 +44,8 @@ def main():
             project_urls={
                 "Tracker": "https://github.com/neptune-ai/neptune-tensorboard/issues",
                 "Source": "https://github.com/neptune-ai/neptune-tensorboard",
-                "Documentation": "https://docs.neptune.ai/integrations-and-supported-tools/experiment-tracking/tensorboard",
+                "Documentation": "https://docs.neptune.ai/integrations-and-supported-tools/experiment-tracking"
+                "/tensorboard",
             },
             license="Apache License 2.0",
             author="neptune.ai",
