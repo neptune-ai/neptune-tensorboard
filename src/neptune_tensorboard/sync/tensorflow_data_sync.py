@@ -54,7 +54,6 @@ class TensorflowDataSync(object):
                     try:
                         traceback.print_exc(e)
                     except:  # noqa: E722
-                        # pylint: disable=bare-except
                         pass
 
     def _does_file_describe_experiment_run(self, path):

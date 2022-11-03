@@ -27,15 +27,15 @@ from PIL import Image
 from pkg_resources import parse_version
 
 try:
-    from tensorflow_core.core.framework import summary_pb2  # pylint:disable=no-name-in-module
+    from tensorflow_core.core.framework import summary_pb2
 except ImportError:
-    from tensorflow.core.framework import summary_pb2  # pylint:disable=no-name-in-module
+    from tensorflow.core.framework import summary_pb2
 
 _integrated_with_tensorflow = False
 
 
 def integrate_with_tensorflow(experiment_getter, prefix=False):
-    global _integrated_with_tensorflow  # pylint:disable=global-statement
+    global _integrated_with_tensorflow
 
     if _integrated_with_tensorflow:
         return
@@ -48,7 +48,6 @@ class TensorflowIntegrator(object):
         self._experiment_holder = experiment_getter
         self._prefix = prefix
 
-    # pylint:disable=protected-access
     def get_channel_name(self, writer, name):
         if self._prefix and writer is not None:
             log = writer.event_writer._logdir
@@ -154,7 +153,6 @@ def _integrate_with_tensorflow(experiment_getter, prefix=False):
         raise Exception(message.format(version))
 
 
-# pylint: disable=no-member, protected-access, no-name-in-module, import-error
 def _patch_tensorflow_1x(tensorflow_integrator):
     _add_summary_method = tf.summary.FileWriter.add_summary
 
@@ -175,7 +173,6 @@ def _patch_tensorflow_2x(experiment_getter, prefix):
         # support TF<2.2
         from tensorflow_core.python.ops import summary_ops_v2
 
-    # pylint:disable=protected-access
     def get_channel_name(name):
         if prefix:
             context = summary_ops_v2.context.context()
