@@ -7,12 +7,11 @@
 ---
 
 [![PyPI version](https://badge.fury.io/py/neptune-tensorboard.svg)](https://badge.fury.io/py/neptune-tensorboard)
-[![Build Status](https://travis-ci.org/neptune-ai/neptune-tensorboard.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-tensorboard)
 
 ![TensorBoard neptune.ai integration](docs/_static/tensorboard_neptuneml.png)
 
 ## Overview
-`neptune-tensorboard` integrates TensorBoard with Neptune to let you get the best of both worlds.
+`neptune-tensorboard` integrates TensorBoard with Neptune to give you the best of both worlds.
 Enjoy tracking from TensorBoard with the organization and collaboration of Neptune.
 
 With `neptune-tensorboard` you can have your TensorBoard experiment runs hosted in a beautiful knowledge repo that lets you invite and manage project contributors.
