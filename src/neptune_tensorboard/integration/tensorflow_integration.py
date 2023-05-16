@@ -62,6 +62,8 @@ def _patch_tensorflow_2x(run, base_namespace):
         _scalar(name, data, step, description)
 
     def image(name, data, step=None, max_outputs=3, description=None):
+        from neptune.types import File
+
         if step is None:
             step = tf.summary.experimental.get_step()
         # expecting 2 or 3 dimensional tensor. If tensor is 4-dimentional,
@@ -70,9 +72,9 @@ def _patch_tensorflow_2x(run, base_namespace):
         shape = tf.shape(data)
         if len(shape) >= 4:
             for num in range(0, shape[0]):
-                run[base_namespace]["image"][get_channel_name(name)] = data[num]
+                run[base_namespace]["image"][get_channel_name(name)].append(File.as_image(data[num]))
         else:
-            run[base_namespace]["image"][get_channel_name(name)] = data
+            run[base_namespace]["image"][get_channel_name(name)] = File.as_image(data)
         _image(name, data, step, max_outputs, description)
 
     def text(name, data, step=None, description=None):
