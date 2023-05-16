@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "enable_tensorboard_logging",
-]
+__all__ = ["enable_tensorboard_logging", "__version__"]
 
 from neptune_tensorboard.integration.tensorflow_integration import enable_tensorboard_logging
