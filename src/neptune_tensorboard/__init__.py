@@ -13,17 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import neptune
+__all__ = [
+    "enable_tensorboard_logging",
+]
 
-
-def integrate_with_tensorflow(prefix=False):
-    from neptune_tensorboard.integration.tensorflow_integration import integrate_with_tensorflow as integration
-
-    integration(neptune.get_experiment, prefix)
-
-
-def integrate_with_keras():
-    msg = """integrate_with_keras() was removed in neptune-tensorboard > 0.3.14.
-    You should use NeptuneMonitor() callback from neptunecontrib.monitoring.keras instead.
-    Read about it here https://docs.neptune.ai/integrations/keras.html"""
-    raise Exception(msg)
+from neptune_tensorboard.integration.tensorflow_integration import enable_tensorboard_logging
