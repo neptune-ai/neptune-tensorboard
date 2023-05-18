@@ -54,6 +54,7 @@ def _patch_tensorflow_2x(run, base_namespace):
     _scalar = tf.summary.scalar
     _text = tf.summary.text
     _image = tf.summary.image
+    _graph = tf.summary.graph
 
     def scalar(name, data, step=None, description=None):
         if step is None:
@@ -81,6 +82,9 @@ def _patch_tensorflow_2x(run, base_namespace):
         run[base_namespace]["text"][get_channel_name(name)] = data
         _text(name, data, step, description)
 
+    def graph(graph_data):
+        _graph(graph_data)
+
     tf.summary.scalar = scalar
     tf.summary._original_no_neptune_scalar = _scalar
 
@@ -89,6 +93,9 @@ def _patch_tensorflow_2x(run, base_namespace):
 
     tf.summary.text = text
     tf.summary._original_no_neptune_text = _text
+
+    tf.summary.graph = graph
+    tf.summary._original_no_neptune_graph = _graph
 
     # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
     # and changes its parameters. The conditional below handles both versions.

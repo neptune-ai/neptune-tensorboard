@@ -15,13 +15,22 @@ def test_logging():
     file_writer.set_as_default()
 
     # Scalar
-    tf.summary.scalar("learning rate", data=0.1, step=1)
+    tf.summary.scalar("learning_rate", data=0.1, step=1)
+    tf.summary.scalar("scalar_tensor", data=tf.constant(0.1), step=1)
 
     # Image
     tf.summary.image("zeros", data=tf.zeros([3, 2, 2, 3]), step=1)
 
     # Text
     tf.summary.text("some_text", data="Hello World!", step=1)
+
+    # Define a Python function.
+    def fn(x):
+        return x + 2
+
+    graph_fn = tf.function(fn)
+    G = graph_fn.get_concrete_function(tf.constant(1)).graph
+    tf.summary.graph(G)
 
     run.exists("tensorboard")
     run.exists("tensorboard/scalar/learning rate")
