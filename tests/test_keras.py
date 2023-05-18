@@ -34,3 +34,5 @@ def test_keras():
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     model.fit(x=x_train, y=y_train, epochs=5, callbacks=[tensorboard_callback])
+
+    run.sync()

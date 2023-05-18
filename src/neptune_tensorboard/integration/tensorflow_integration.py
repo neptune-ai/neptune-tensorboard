@@ -18,6 +18,14 @@ from __future__ import unicode_literals
 import tensorflow as tf
 from pkg_resources import parse_version
 
+IS_GRAPHLIB_AVAILABLE = False
+try:
+    import tfgraphviz as tfg
+
+    IS_GRAPHLIB_AVAILABLE = True
+except ImportError:
+    pass
+
 _integrated_with_tensorflow = False
 
 
@@ -83,6 +91,11 @@ def _patch_tensorflow_2x(run, base_namespace):
         _text(name, data, step, description)
 
     def graph(graph_data):
+        if IS_GRAPHLIB_AVAILABLE:
+            graph = tfg.board(graph_data)
+            graph.format = "png"
+            graph.render("test")
+            run[base_namespace]["graph"]["graph_1"].upload("test.png")
         _graph(graph_data)
 
     tf.summary.scalar = scalar

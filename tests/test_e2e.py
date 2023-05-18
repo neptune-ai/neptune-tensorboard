@@ -32,6 +32,8 @@ def test_logging():
     G = graph_fn.get_concrete_function(tf.constant(1)).graph
     tf.summary.graph(G)
 
+    run.sync()
+
     run.exists("tensorboard")
     run.exists("tensorboard/scalar/learning rate")
     run.exists("tensorboard/image/zeros")
