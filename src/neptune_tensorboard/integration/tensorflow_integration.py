@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 import warnings
 from importlib.util import find_spec
 
 import tensorflow as tf
 from pkg_resources import parse_version
+
+from .utils import safe_upload_visualization
 
 IS_GRAPHLIB_AVAILABLE = find_spec("tfgraphviz")
 if IS_GRAPHLIB_AVAILABLE:
@@ -88,8 +91,12 @@ def _patch_tensorflow_2x(run, base_namespace):
         if IS_GRAPHLIB_AVAILABLE:
             graph = tfg.board(graph_data)
             graph.format = "png"
-            graph.render("test")
-            run[base_namespace]["graph"]["graph_1"].upload("test.png")
+            fname = str(uuid.uuid4())
+            graph.render(fname)
+            # There is only one graph
+            # NOTE: Render automatically adds `.png` to the extension,
+            #       so we pass fname + ".png"
+            safe_upload_visualization(run[base_namespace], "graph", fname + ".png")
         else:
             warnings.warn("Skipping model visualization because no tfgraphviz installation was found.")
         _graph(graph_data)
@@ -105,39 +112,3 @@ def _patch_tensorflow_2x(run, base_namespace):
 
     tf.summary.graph = graph
     tf.summary._original_no_neptune_graph = _graph
-
-    # NOTE: Metrics are scalars
-
-    # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
-    # and changes its parameters. The conditional below handles both versions.
-    if hasattr(tf.keras.callbacks.TensorBoard, "_log_metrics"):
-
-        _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
-
-        def _log_metrics(instance, logs, prefix, step):
-
-            for (name, value) in logs.items():
-                if name in ("batch", "size", "num_steps"):
-                    continue
-                run[base_namespace]["scalar"][name].append(value)
-
-            _tb_log_metrics(instance, logs, prefix, step)
-
-        tf.keras.callbacks.TensorBoard._log_metrics = _log_metrics
-
-    elif hasattr(tf.keras.callbacks.TensorBoard, "_log_epoch_metrics"):
-
-        _tb_log_epoch_metrics = tf.keras.callbacks.TensorBoard._log_epoch_metrics
-
-        def _log_epoch_metrics(instance, epoch, logs):
-            for (name, value) in logs.items():
-                if name in ("batch", "size", "num_steps"):
-                    continue
-                run[base_namespace]["scalar"][name].append(value)
-
-            _tb_log_epoch_metrics(instance, epoch, logs)
-
-        tf.keras.callbacks.TensorBoard._log_epoch_metrics = _log_epoch_metrics
-
-    else:
-        raise AttributeError("Unsupported Tensorflow version")
