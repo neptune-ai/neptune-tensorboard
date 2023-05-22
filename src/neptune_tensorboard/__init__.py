@@ -15,4 +15,7 @@
 #
 __all__ = ["enable_tensorboard_logging", "__version__"]
 
-from neptune_tensorboard.integration.tensorflow_integration import enable_tensorboard_logging
+from neptune_tensorboard.integration import (
+    __version__,
+    enable_tensorboard_logging,
+)

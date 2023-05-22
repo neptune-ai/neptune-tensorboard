@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from __future__ import unicode_literals
+import warnings
+from importlib.util import find_spec
 
 import tensorflow as tf
 from pkg_resources import parse_version
 
-IS_GRAPHLIB_AVAILABLE = False
-try:
+IS_GRAPHLIB_AVAILABLE = find_spec("tfgraphviz")
+if IS_GRAPHLIB_AVAILABLE:
     import tfgraphviz as tfg
-
-    IS_GRAPHLIB_AVAILABLE = True
-except ImportError:
-    pass
 
 _integrated_with_tensorflow = False
 
 
-def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
+def patch_tensorflow(run, base_namespace):
     global _integrated_with_tensorflow
 
     if _integrated_with_tensorflow:
@@ -48,10 +45,7 @@ def _integrate_with_tensorflow(run, base_namespace):
         if version >= parse_version("2.0.0-rc0"):
             return _patch_tensorflow_2x(run, base_namespace)
     except AttributeError:
-        message = (
-            "Unrecognized tensorflow version: {}. Please consider "
-            "upgrading your neptune and neptune-tensorboard libraries"
-        )
+        message = "Unrecognized tensorflow version: {}. Please make sure " "that the tensorflow version is >=2.0"
         raise Exception(message.format(version))
 
 
@@ -96,6 +90,8 @@ def _patch_tensorflow_2x(run, base_namespace):
             graph.format = "png"
             graph.render("test")
             run[base_namespace]["graph"]["graph_1"].upload("test.png")
+        else:
+            warnings.warn("Skipping model visualization because no tfgraphviz installation was found.")
         _graph(graph_data)
 
     tf.summary.scalar = scalar
@@ -110,6 +106,8 @@ def _patch_tensorflow_2x(run, base_namespace):
     tf.summary.graph = graph
     tf.summary._original_no_neptune_graph = _graph
 
+    # NOTE: Metrics are scalars
+
     # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
     # and changes its parameters. The conditional below handles both versions.
     if hasattr(tf.keras.callbacks.TensorBoard, "_log_metrics"):
@@ -121,7 +119,7 @@ def _patch_tensorflow_2x(run, base_namespace):
             for (name, value) in logs.items():
                 if name in ("batch", "size", "num_steps"):
                     continue
-                run[base_namespace][get_channel_name(name)].append(value)
+                run[base_namespace]["scalar"][name].append(value)
 
             _tb_log_metrics(instance, logs, prefix, step)
 
@@ -135,7 +133,7 @@ def _patch_tensorflow_2x(run, base_namespace):
             for (name, value) in logs.items():
                 if name in ("batch", "size", "num_steps"):
                     continue
-                run[base_namespace][get_channel_name(name)].append(value)
+                run[base_namespace]["scalar"][name].append(value)
 
             _tb_log_epoch_metrics(instance, epoch, logs)
 

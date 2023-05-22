@@ -13,3 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+__all__ = ["enable_tensorboard_logging", "__version__"]
+
+from importlib.util import find_spec
+
+from .tensorflow_integration import patch_tensorflow
+from .version import __version__
+
+
+def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
+    if find_spec("tensorflow"):
+        patch_tensorflow(run, base_namespace=base_namespace)
