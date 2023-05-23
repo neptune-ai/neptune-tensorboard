@@ -18,8 +18,8 @@ __all__ = ["enable_tensorboard_logging", "__version__"]
 
 from importlib.util import find_spec
 
-from .tensorflow_integration import patch_tensorflow
-from .version import __version__
+from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
+from neptune_tensorboard.integration.version import __version__
 
 
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):

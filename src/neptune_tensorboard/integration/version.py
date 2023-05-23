@@ -25,7 +25,7 @@ if not (find_spec("neptune") or find_spec("neptune-client")):
     raise PackageNotFoundError(msg)
 
 try:
-    __version__ = version("neptune-pytorch")
+    __version__ = version("neptune-tensorboard")
 except PackageNotFoundError:
     # package is not installed
     pass

@@ -20,7 +20,7 @@ from importlib.util import find_spec
 import tensorflow as tf
 from pkg_resources import parse_version
 
-from .utils import safe_upload_visualization
+from neptune_tensorboard.integration.utils import safe_upload_visualization
 
 IS_GRAPHLIB_AVAILABLE = find_spec("tfgraphviz")
 if IS_GRAPHLIB_AVAILABLE:
