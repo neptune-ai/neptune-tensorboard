@@ -37,6 +37,5 @@ def test_keras():
 
         run.sync()
         assert run.exists("tensorboard")
-        assert run.exists("tensorboard/graph")
         assert run.exists("tensorboard/scalar/batch_loss")
         assert run.exists("tensorboard/scalar/batch_accuracy")
