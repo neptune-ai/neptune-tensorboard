@@ -16,12 +16,26 @@
 
 __all__ = ["enable_tensorboard_logging", "__version__"]
 
-from importlib.util import find_spec
+import warnings
 
 from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
 from neptune_tensorboard.integration.version import __version__
 
+# NOTE: We don't use `importlib.find_spec` here as
+#       TF can be installed from multiple packages
+#       like tensorflow, tensorflow-macos, etc.
+IS_TF_AVAILABLE = False
+try:
+    import tensorflow as tf  # noqa
+
+    IS_TF_AVAILABLE = True
+except ModuleNotFoundError:
+    pass
+
 
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
-    if find_spec("tensorflow"):
+    if IS_TF_AVAILABLE:
         patch_tensorflow(run, base_namespace=base_namespace)
+    else:
+        msg = "neptune-tensorboard: Tensorflow was not found, please ensure that it is available."
+        warnings.warn(msg)
