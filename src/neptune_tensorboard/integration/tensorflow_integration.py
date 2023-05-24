@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import warnings
+from functools import wraps
 from importlib.util import find_spec
 
 import tensorflow as tf
@@ -56,12 +57,14 @@ def _patch_tensorflow_2x(run, base_namespace):
     _image = tf.summary.image
     _graph = tf.summary.graph
 
+    @wraps(_scalar)
     def scalar(name, data, step=None, description=None):
         if step is None:
             step = tf.summary.experimental.get_step()
         run[base_namespace]["scalar"][name].append(data)
         _scalar(name, data, step, description)
 
+    @wraps(_image)
     def image(name, data, step=None, max_outputs=3, description=None):
         if step is None:
             step = tf.summary.experimental.get_step()
@@ -76,10 +79,12 @@ def _patch_tensorflow_2x(run, base_namespace):
             run[base_namespace]["image"][name] = File.as_image(data)
         _image(name, data, step, max_outputs, description)
 
+    @wraps(_text)
     def text(name, data, step=None, description=None):
         run[base_namespace]["text"][name] = data
         _text(name, data, step, description)
 
+    @wraps(_graph)
     def graph(graph_data):
         if IS_GRAPHLIB_AVAILABLE:
             graph = tfg.board(graph_data)
