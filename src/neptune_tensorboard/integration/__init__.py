@@ -18,7 +18,6 @@ __all__ = ["enable_tensorboard_logging", "__version__"]
 
 import warnings
 
-from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
 from neptune_tensorboard.integration.version import __version__
 
 # NOTE: We don't use `importlib.find_spec` here as
@@ -29,6 +28,9 @@ try:
     import tensorflow as tf  # noqa
 except ModuleNotFoundError:
     IS_TF_AVAILABLE = False
+
+if IS_TF_AVAILABLE:
+    from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
 
 
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
