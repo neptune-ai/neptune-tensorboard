@@ -13,255 +13,79 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from __future__ import unicode_literals
-
-import io
-import os
-import sys
-import time
+import warnings
+from functools import wraps
+from importlib.util import find_spec
 
 import tensorflow as tf
-from future.builtins import object
-from neptune.exceptions import NeptuneException
-from PIL import Image
-from pkg_resources import parse_version
+from neptune.types import File
 
-try:
-    from tensorflow_core.core.framework import summary_pb2
-except ImportError:
-    from tensorflow.core.framework import summary_pb2
+IS_GRAPHLIB_AVAILABLE = find_spec("tfgraphviz")
+if IS_GRAPHLIB_AVAILABLE:
+    import tfgraphviz as tfg
 
 _integrated_with_tensorflow = False
 
+__all__ = ["patch_tensorflow"]
 
-def integrate_with_tensorflow(experiment_getter, prefix=False):
+
+def patch_tensorflow(run, base_namespace):
     global _integrated_with_tensorflow
 
-    if _integrated_with_tensorflow:
-        return
-    _integrate_with_tensorflow(experiment_getter, prefix)
-    _integrated_with_tensorflow = True
+    if not _integrated_with_tensorflow:
+        patch_tensorflow_2x(run, base_namespace)
+        _integrated_with_tensorflow = True
 
 
-class TensorflowIntegrator(object):
-    def __init__(self, prefix=False, experiment_getter=None):
-        self._experiment_holder = experiment_getter
-        self._prefix = prefix
-
-    def get_channel_name(self, writer, name):
-        if self._prefix and writer is not None:
-            log = writer.event_writer._logdir
-            writer_name = os.path.split(log)[1]
-            if writer_name:
-                return writer_name + "_" + name
-        return name
-
-    def add_summary(self, writer, summary, global_step=None):
-
-        if isinstance(summary, bytes):
-            summ = summary_pb2.Summary()
-            summ.ParseFromString(summary)
-            summary = summ
-
-        x = self._calculate_x_value(global_step)
-        for value in summary.value:
-            try:
-                self.add_value(x, value, writer)
-            except NeptuneException:
-                pass
-
-    def add_value(self, x, value, writer):
-        field = value.WhichOneof("value")
-
-        if field == "simple_value":
-            self.send_numeric(
-                tag=self.get_channel_name(writer, value.tag), step=x, value=value.simple_value, wall_time=time.time()
-            )
-            return
-
-        if field == "image":
-            self.send_image(
-                tag=self.get_channel_name(writer, value.tag),
-                step=x,
-                encoded_image_string=value.image.encoded_image_string,
-                wall_time=time.time(),
-            )
-            return
-
-        if field == "tensor" and value.tensor.dtype == tf.string:
-            string_values = []
-            for _ in range(0, len(value.tensor.string_val)):
-                string_value = value.tensor.string_val.pop()
-                string_values.append(string_value.decode("utf-8"))
-
-            self.send_text(
-                tag=self.get_channel_name(writer, value.tag),
-                step=x,
-                text=", ".join(string_values),
-                wall_time=time.time(),
-            )
-            return
-
-    def send_numeric(self, tag, step, value, wall_time):
-        self._experiment_holder().send_metric(channel_name=tag, x=step, y=value, timestamp=wall_time)
-
-    def send_image(self, tag, step, encoded_image_string, wall_time):
-        image_desc = "({}. Step {})".format(tag, step)
-        self._experiment_holder().send_image(
-            channel_name=tag,
-            x=step,
-            y=Image.open(io.BytesIO(encoded_image_string)),
-            name=image_desc,
-            description=image_desc,
-            timestamp=wall_time,
-        )
-
-    def send_text(self, tag, step, text, wall_time):
-        self._experiment_holder().send_text(channel_name=tag, x=step, y=text, timestamp=wall_time)
-
-    @staticmethod
-    def get_writer_name(log_dir):
-        return os.path.basename(os.path.normpath(log_dir))
-
-    @staticmethod
-    def _calculate_x_value(global_step):
-        if global_step is not None:
-            return int(global_step)
-        else:
-            return time.time()
+def track_scalar(name, data, step=None, description=None, run=None, base_namespace=None):
+    run[base_namespace]["scalar"][name].append(data)
 
 
-def _integrate_with_tensorflow(experiment_getter, prefix=False):
-    tensorflow_integrator = TensorflowIntegrator(experiment_getter=experiment_getter, prefix=prefix)
-
-    try:
-        version = "<unknown>"
-
-        # noinspection PyUnresolvedReferences
-        version = parse_version(tf.version.VERSION)
-
-        if version >= parse_version("2.0.0-rc0"):
-            return _patch_tensorflow_2x(experiment_getter, prefix)
-        elif version >= parse_version("1.0.0"):
-            return _patch_tensorflow_1x(tensorflow_integrator)
-
-    except AttributeError:
-        message = (
-            "Unrecognized tensorflow version: {}. Please consider "
-            "upgrading your neptune-client and neptune-tensorboard libraries"
-        )
-        raise Exception(message.format(version))
-
-
-def _patch_tensorflow_1x(tensorflow_integrator):
-    _add_summary_method = tf.summary.FileWriter.add_summary
-
-    def _neptune_add_summary(summary_writer, summary, global_step=None):
-        tensorflow_integrator.add_summary(summary_writer, summary, global_step)
-        _add_summary_method(summary_writer, summary, global_step=global_step)
-
-    tf.summary.FileWriter.add_summary = _neptune_add_summary
-    tf.summary.FileWriter._original_no_neptune_add_summary = _add_summary_method
-
-    return tensorflow_integrator
-
-
-def _patch_tensorflow_2x(experiment_getter, prefix):
-    try:
-        from tensorflow.python.ops import summary_ops_v2
-    except ImportError:
-        # support TF<2.2
-        from tensorflow_core.python.ops import summary_ops_v2
-
-    def get_channel_name(name):
-        if prefix:
-            context = summary_ops_v2.context.context()
-            if hasattr(context, "summary_writer"):
-                writer = context.summary_writer
-            elif "tensorflow.python.ops.summary_ops_v2" in sys.modules:
-                writer = sys.modules["tensorflow.python.ops.summary_ops_v2"]._summary_state.writer
-            else:
-                writer = None
-            if writer is not None:
-                log = str(writer._init_op_fn.keywords["logdir"]._numpy(), "utf-8")
-                writer_name = os.path.split(log)[1]
-                if writer_name:
-                    return writer_name + "_" + name
-        return name
-
-    _scalar = tf.summary.scalar
-    _text = tf.summary.text
-    _image = tf.summary.image
-
-    def scalar(name, data, step=None, description=None):
-        if step is None:
-            step = tf.summary.experimental.get_step()
-        experiment_getter().log_metric(get_channel_name(name), x=step, y=data)
-        _scalar(name, data, step, description)
-
-    def image(name, data, step=None, max_outputs=3, description=None):
-        if step is None:
-            step = tf.summary.experimental.get_step()
-        # expecting 2 or 3 dimensional tensor. If tensor is 4-dimentional,
-        # as in https://www.tensorflow.org/api_docs/python/tf/summary/image
-        # iterate over first dimension to send all images
-        shape = tf.shape(data)
-        if len(shape) >= 4:
-            for num in range(0, shape[0]):
-                current_step = step + float(num) / (int(shape[0]) + 1)
-                experiment_getter().log_image(
-                    get_channel_name(name), x=current_step, y=data[num], description=description
-                )
-        else:
-            experiment_getter().log_image(get_channel_name(name), x=step, y=data, description=description)
-        _image(name, data, step, max_outputs, description)
-
-    def text(name, data, step=None, description=None):
-        if step is None:
-            step = tf.summary.experimental.get_step()
-        experiment_getter().log_text(get_channel_name(name), x=step, y=data)
-        _text(name, data, step, description)
-
-    tf.summary.scalar = scalar
-    tf.summary._original_no_neptune_scalar = _scalar
-
-    tf.summary.image = image
-    tf.summary._original_no_neptune_image = _image
-
-    tf.summary.text = text
-    tf.summary._original_no_neptune_text = _text
-
-    # Tensorflow 2.3 renames the internal method from `_log_metrics` to `_log_epoch_metrics`
-    # and changes its parameters. The conditional below handles both versions.
-    if hasattr(tf.keras.callbacks.TensorBoard, "_log_metrics"):
-
-        _tb_log_metrics = tf.keras.callbacks.TensorBoard._log_metrics
-
-        def _log_metrics(instance, logs, prefix, step):
-            exp = experiment_getter()
-            for (name, value) in logs.items():
-                if name in ("batch", "size", "num_steps"):
-                    continue
-                exp.log_metric(get_channel_name(name), x=step, y=value)
-
-            _tb_log_metrics(instance, logs, prefix, step)
-
-        tf.keras.callbacks.TensorBoard._log_metrics = _log_metrics
-
-    elif hasattr(tf.keras.callbacks.TensorBoard, "_log_epoch_metrics"):
-
-        _tb_log_epoch_metrics = tf.keras.callbacks.TensorBoard._log_epoch_metrics
-
-        def _log_epoch_metrics(instance, epoch, logs):
-            exp = experiment_getter()
-            for (name, value) in logs.items():
-                if name in ("batch", "size", "num_steps"):
-                    continue
-                exp.log_metric(get_channel_name(name), x=epoch, y=value)
-
-            _tb_log_epoch_metrics(instance, epoch, logs)
-
-        tf.keras.callbacks.TensorBoard._log_epoch_metrics = _log_epoch_metrics
-
+def track_image(name, data, step=None, run=None, base_namespace=None):
+    # expecting 2 or 3 dimensional tensor. If tensor is 4-dimentional,
+    # as in https://www.tensorflow.org/api_docs/python/tf/summary/image
+    # iterate over first dimension to send all images
+    shape = tf.shape(data)
+    if len(shape) >= 4:
+        for num in range(0, shape[0]):
+            run[base_namespace]["image"][name].append(File.as_image(data[num]))
     else:
-        raise AttributeError("Unsupported Tensorflow version")
+        run[base_namespace]["image"][name] = File.as_image(data)
+
+
+def track_text(name, data, step=None, description=None, run=None, base_namespace=None):
+    run[base_namespace]["text"][name] = data
+
+
+def track_graph(graph_data, run=None, base_namespace=None):
+    if IS_GRAPHLIB_AVAILABLE:
+        graph = tfg.board(graph_data)
+        png_bytes = graph.pipe(format="png")
+        # There is only one graph
+        run[base_namespace]["graph"].upload(File.from_content(png_bytes, extension="png"))
+    else:
+        warnings.warn("Skipping model visualization because no tfgraphviz installation was found.")
+
+
+def register_pre_hook(original, neptune_hook, run, base_namespace):
+    @wraps(original)
+    def wrapper(*args, **kwargs):
+        neptune_hook(*args, **kwargs, run=run, base_namespace=base_namespace)
+        return original(*args, **kwargs)
+
+    return wrapper
+
+
+def patch_tensorflow_2x(run, base_namespace):
+    tf.summary.scalar = register_pre_hook(
+        original=tf.summary.scalar, neptune_hook=track_scalar, run=run, base_namespace=base_namespace
+    )
+    tf.summary.image = register_pre_hook(
+        original=tf.summary.image, neptune_hook=track_image, run=run, base_namespace=base_namespace
+    )
+    tf.summary.text = register_pre_hook(
+        original=tf.summary.text, neptune_hook=track_text, run=run, base_namespace=base_namespace
+    )
+    tf.summary.graph = register_pre_hook(
+        original=tf.summary.graph, neptune_hook=track_graph, run=run, base_namespace=base_namespace
+    )
