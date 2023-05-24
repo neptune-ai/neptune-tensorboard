@@ -24,13 +24,11 @@ from neptune_tensorboard.integration.version import __version__
 # NOTE: We don't use `importlib.find_spec` here as
 #       TF can be installed from multiple packages
 #       like tensorflow, tensorflow-macos, etc.
-IS_TF_AVAILABLE = False
+IS_TF_AVAILABLE = True
 try:
     import tensorflow as tf  # noqa
-
-    IS_TF_AVAILABLE = True
 except ModuleNotFoundError:
-    pass
+    IS_TF_AVAILABLE = False
 
 
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
