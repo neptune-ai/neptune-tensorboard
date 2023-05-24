@@ -52,16 +52,10 @@ def _integrate_with_tensorflow(run, base_namespace):
 
 
 def track_scalar(name, data, step=None, description=None, run=None, base_namespace=None):
-    if step is None:
-        step = tf.summary.experimental.get_step()
     run[base_namespace]["scalar"][name].append(data)
 
 
 def track_image(name, data, step=None, run=None, base_namespace=None):
-    from neptune.types import File
-
-    if step is None:
-        step = tf.summary.experimental.get_step()
     # expecting 2 or 3 dimensional tensor. If tensor is 4-dimentional,
     # as in https://www.tensorflow.org/api_docs/python/tf/summary/image
     # iterate over first dimension to send all images
