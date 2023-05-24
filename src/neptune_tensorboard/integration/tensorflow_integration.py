@@ -27,25 +27,25 @@ if IS_GRAPHLIB_AVAILABLE:
 
 _integrated_with_tensorflow = False
 
+__all__ = ["patch_tensorflow"]
+
 
 def patch_tensorflow(run, base_namespace):
     global _integrated_with_tensorflow
 
-    if _integrated_with_tensorflow:
-        return
-    _integrate_with_tensorflow(run, base_namespace)
-    _integrated_with_tensorflow = True
+    if not _integrated_with_tensorflow:
+        integrate_with_tensorflow(run, base_namespace)
+        _integrated_with_tensorflow = True
 
 
-def _integrate_with_tensorflow(run, base_namespace):
+def integrate_with_tensorflow(run, base_namespace):
+    version = "<unknown>"
     try:
-        version = "<unknown>"
-
         # noinspection PyUnresolvedReferences
         version = parse_version(tf.version.VERSION)
 
         if version >= parse_version("2.0.0-rc0"):
-            return _patch_tensorflow_2x(run, base_namespace)
+            patch_tensorflow_2x(run, base_namespace)
     except AttributeError:
         message = "Unrecognized tensorflow version: {}. Please make sure " "that the tensorflow version is >=2.0"
         raise Exception(message.format(version))
@@ -90,7 +90,7 @@ def register_pre_hook(original, neptune_hook, run, base_namespace):
     return wrapper
 
 
-def _patch_tensorflow_2x(run, base_namespace):
+def patch_tensorflow_2x(run, base_namespace):
     tf.summary.scalar = register_pre_hook(
         original=tf.summary.scalar, neptune_hook=track_scalar, run=run, base_namespace=base_namespace
     )
