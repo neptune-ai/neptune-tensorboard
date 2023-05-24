@@ -18,6 +18,8 @@ __all__ = ["enable_tensorboard_logging", "__version__"]
 
 import warnings
 
+from pkg_resources import parse_version
+
 from neptune_tensorboard.integration.version import __version__
 
 # NOTE: We don't use `importlib.find_spec` here as
@@ -32,10 +34,22 @@ except ModuleNotFoundError:
 if IS_TF_AVAILABLE:
     from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
 
+    def integrate_with_tensorflow(run, base_namespace):
+        version = "<unknown>"
+        try:
+            # noinspection PyUnresolvedReferences
+            version = parse_version(tf.version.VERSION)
+
+            if version >= parse_version("2.0.0-rc0"):
+                patch_tensorflow(run, base_namespace)
+        except AttributeError:
+            message = "Unrecognized tensorflow version: {}. Please make sure " "that the tensorflow version is >=2.0"
+            raise Exception(message.format(version))
+
 
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
     if IS_TF_AVAILABLE:
-        patch_tensorflow(run, base_namespace=base_namespace)
+        integrate_with_tensorflow(run, base_namespace)
     else:
         msg = "neptune-tensorboard: Tensorflow was not found, please ensure that it is available."
         warnings.warn(msg)

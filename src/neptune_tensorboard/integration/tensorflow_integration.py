@@ -19,7 +19,6 @@ from importlib.util import find_spec
 
 import tensorflow as tf
 from neptune.types import File
-from pkg_resources import parse_version
 
 IS_GRAPHLIB_AVAILABLE = find_spec("tfgraphviz")
 if IS_GRAPHLIB_AVAILABLE:
@@ -34,21 +33,8 @@ def patch_tensorflow(run, base_namespace):
     global _integrated_with_tensorflow
 
     if not _integrated_with_tensorflow:
-        integrate_with_tensorflow(run, base_namespace)
+        patch_tensorflow_2x(run, base_namespace)
         _integrated_with_tensorflow = True
-
-
-def integrate_with_tensorflow(run, base_namespace):
-    version = "<unknown>"
-    try:
-        # noinspection PyUnresolvedReferences
-        version = parse_version(tf.version.VERSION)
-
-        if version >= parse_version("2.0.0-rc0"):
-            patch_tensorflow_2x(run, base_namespace)
-    except AttributeError:
-        message = "Unrecognized tensorflow version: {}. Please make sure " "that the tensorflow version is >=2.0"
-        raise Exception(message.format(version))
 
 
 def track_scalar(name, data, step=None, description=None, run=None, base_namespace=None):
