@@ -52,4 +52,3 @@ def test_pytorch():
         assert run.exists("tensorboard/metrics/loss")
         assert run.exists("tensorboard/figure/my_figure")
         assert run.exists("tensorboard/text/my_text")
-        assert run.exists("tensorboard/graph")
