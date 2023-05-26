@@ -17,6 +17,7 @@
 __all__ = ["enable_tensorboard_logging", "__version__"]
 
 import warnings
+from importlib.util import find_spec
 
 from pkg_resources import parse_version
 
@@ -30,6 +31,8 @@ try:
     import tensorflow as tf  # noqa
 except ModuleNotFoundError:
     IS_TF_AVAILABLE = False
+
+IS_PYT_AVAILABLE = find_spec("torch")
 
 if IS_TF_AVAILABLE:
     from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
@@ -47,9 +50,30 @@ if IS_TF_AVAILABLE:
             raise Exception(message.format(version))
 
 
+if IS_PYT_AVAILABLE:
+    import torch
+
+    from neptune_tensorboard.integration.pytorch_integration import patch_pytorch
+
+    def integrate_with_pytorch(run, base_namespace):
+        version = "<unknown>"
+        try:
+            # noinspection PyUnresolvedReferences
+            version = parse_version(torch.__version__)
+
+            if version >= parse_version("1.9.0"):
+                patch_pytorch(run, base_namespace)
+        except AttributeError:
+            message = "Unrecognized PyTorch version: {}. Please make sure " "that the PyTorch version is >=1.9.0"
+            raise Exception(message.format(version))
+
+
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
     if IS_TF_AVAILABLE:
         integrate_with_tensorflow(run, base_namespace)
-    else:
-        msg = "neptune-tensorboard: Tensorflow was not found, please ensure that it is available."
+    if IS_PYT_AVAILABLE:
+        integrate_with_pytorch(run, base_namespace)
+
+    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
+        msg = "neptune-tensorboard: Tensorflow or PyTorch was not found, please ensure that it is available."
         warnings.warn(msg)

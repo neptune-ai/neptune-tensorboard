@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 import warnings
-from functools import wraps
 from importlib.util import find_spec
 
 import tensorflow as tf
 from neptune.types import File
+
+from neptune_tensorboard.integration.utils import register_pre_hook
 
 IS_GRAPHLIB_AVAILABLE = find_spec("tfgraphviz")
 if IS_GRAPHLIB_AVAILABLE:
@@ -65,15 +66,6 @@ def track_graph(graph_data, run=None, base_namespace=None):
         run[base_namespace]["graph"].upload(File.from_content(png_bytes, extension="png"))
     else:
         warnings.warn("Skipping model visualization because no tfgraphviz installation was found.")
-
-
-def register_pre_hook(original, neptune_hook, run, base_namespace):
-    @wraps(original)
-    def wrapper(*args, **kwargs):
-        neptune_hook(*args, **kwargs, run=run, base_namespace=base_namespace)
-        return original(*args, **kwargs)
-
-    return wrapper
 
 
 def patch_tensorflow_2x(run, base_namespace):
