@@ -33,6 +33,7 @@ except ModuleNotFoundError:
     IS_TF_AVAILABLE = False
 
 IS_PYT_AVAILABLE = find_spec("torch")
+IS_TENSORBOARDX_AVAILABLE = find_spec("tensorboardX")
 
 if IS_TF_AVAILABLE:
     from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
@@ -68,12 +69,32 @@ if IS_PYT_AVAILABLE:
             raise Exception(message.format(version))
 
 
+if IS_TENSORBOARDX_AVAILABLE:
+    import tensorboardX
+
+    from neptune_tensorboard.integration.tensorboardx_integration import patch_tensorboardx
+
+    def integrate_with_tensorboardx(run, base_namespace):
+        version = "<unknown>"
+        try:
+            # noinspection PyUnresolvedReferences
+            version = parse_version(tensorboardX.__version__)
+
+            if version >= parse_version("2.2.0"):
+                patch_tensorboardx(run, base_namespace)
+        except AttributeError:
+            message = "Unrecognized tensorboardX version: {}. Please make sure " "that the PyTorch version is >=2.2.0"
+            raise Exception(message.format(version))
+
+
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
     if IS_TF_AVAILABLE:
         integrate_with_tensorflow(run, base_namespace)
     if IS_PYT_AVAILABLE:
         integrate_with_pytorch(run, base_namespace)
+    if IS_TENSORBOARDX_AVAILABLE:
+        integrate_with_tensorboardx(run, base_namespace)
 
-    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
+    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE or IS_TENSORBOARDX_AVAILABLE):
         msg = "neptune-tensorboard: Tensorflow or PyTorch was not found, please ensure that it is available."
         warnings.warn(msg)
