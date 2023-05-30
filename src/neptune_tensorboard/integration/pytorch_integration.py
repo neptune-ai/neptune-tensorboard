@@ -3,6 +3,7 @@ from functools import partial
 
 import torch
 from neptune.types import File
+from neptune.utils import stringify_unsupported
 from torch.utils.tensorboard.writer import SummaryWriter
 
 from neptune_tensorboard.integration.utils import register_pre_hook
@@ -109,7 +110,7 @@ def track_graph(
 def track_hparam(
     summary_writer, hparam_dict, metric_dict, hparam_domain_discrete=None, run_name=None, run=None, base_namespace=None
 ):
-    run[base_namespace]["hparams"] = hparam_dict
+    run[base_namespace]["hparams"] = stringify_unsupported(hparam_dict)
     run[base_namespace]["metrics"] = metric_dict
 
 
