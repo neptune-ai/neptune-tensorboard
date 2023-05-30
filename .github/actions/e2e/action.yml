@@ -28,5 +28,5 @@ runs:
 
     - name: Run tests
       working-directory: ${{ inputs.working_directory }}
-      run: pytest -n 3 -v
+      run: pytest -n 4 -v
       shell: bash
