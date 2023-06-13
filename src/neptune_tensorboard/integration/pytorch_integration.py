@@ -14,11 +14,17 @@ try:
 except ImportError:
     IS_TORCHVIZ_AVAILABLE = False
 
-__all__ = [
-    "patch_pytorch",
-]
+__all__ = ["patch_pytorch", "disable_pytorch"]
 
 _integrated_with_pytorch = False
+
+org_add_scalar = SummaryWriter.add_scalar
+org_add_image = SummaryWriter.add_image
+org_add_images = SummaryWriter.add_images
+org_add_figure = SummaryWriter.add_figure
+org_add_text = SummaryWriter.add_text
+org_add_graph = SummaryWriter.add_graph
+org_add_hparams = SummaryWriter.add_hparams
 
 
 def patch_pytorch(run, base_namespace):
@@ -27,6 +33,12 @@ def patch_pytorch(run, base_namespace):
     if not _integrated_with_pytorch:
         integrate(run, base_namespace)
         _integrated_with_pytorch = True
+
+
+def disable_pytorch():
+    global _integrated_with_pytorch
+    disable()
+    _integrated_with_pytorch = False
 
 
 def track_scalar(
@@ -132,3 +144,13 @@ def integrate(run, base_namespace):
     SummaryWriter.add_hparams = register_pre_hook_with_run(
         original=SummaryWriter.add_hparams, neptune_hook=track_hparam
     )
+
+
+def disable():
+    SummaryWriter.add_scalar = org_add_scalar
+    SummaryWriter.add_image = org_add_image
+    SummaryWriter.add_images = org_add_images
+    SummaryWriter.add_figure = org_add_figure
+    SummaryWriter.add_text = org_add_text
+    SummaryWriter.add_graph = org_add_graph
+    SummaryWriter.add_hparams = org_add_hparams

@@ -16,6 +16,7 @@
 
 __all__ = ["enable_tensorboard_logging", "__version__"]
 
+import contextlib
 import warnings
 from importlib.util import find_spec
 
@@ -35,7 +36,10 @@ except ModuleNotFoundError:
 IS_PYT_AVAILABLE = find_spec("torch")
 
 if IS_TF_AVAILABLE:
-    from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
+    from neptune_tensorboard.integration.tensorflow_integration import (
+        disable_tensorflow,
+        patch_tensorflow,
+    )
 
     def integrate_with_tensorflow(run, base_namespace):
         version = "<unknown>"
@@ -53,7 +57,10 @@ if IS_TF_AVAILABLE:
 if IS_PYT_AVAILABLE:
     import torch
 
-    from neptune_tensorboard.integration.pytorch_integration import patch_pytorch
+    from neptune_tensorboard.integration.pytorch_integration import (
+        disable_pytorch,
+        patch_pytorch,
+    )
 
     def integrate_with_pytorch(run, base_namespace):
         version = "<unknown>"
@@ -68,7 +75,7 @@ if IS_PYT_AVAILABLE:
             raise Exception(message.format(version))
 
 
-def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
+def _patch_frameworks(run, base_namespace):
     if IS_TF_AVAILABLE:
         integrate_with_tensorflow(run, base_namespace)
     if IS_PYT_AVAILABLE:
@@ -77,3 +84,23 @@ def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
     if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
         msg = "neptune-tensorboard: Tensorflow or PyTorch was not found, please ensure that it is available."
         warnings.warn(msg)
+
+
+def _disable_frameworks():
+    if IS_TF_AVAILABLE:
+        disable_tensorflow()
+    if IS_PYT_AVAILABLE:
+        disable_pytorch()
+
+
+def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
+    _patch_frameworks(run, base_namespace)
+
+
+@contextlib.contextmanager
+def enable_tensorboard_logging_ctx(run, *, base_namespace="tensorboard"):
+    _patch_frameworks(run, base_namespace)
+    try:
+        yield
+    finally:
+        _disable_frameworks()

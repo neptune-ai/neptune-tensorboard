@@ -27,7 +27,12 @@ if IS_GRAPHLIB_AVAILABLE:
 
 _integrated_with_tensorflow = False
 
-__all__ = ["patch_tensorflow"]
+__all__ = ["patch_tensorflow", "disable_tensorflow"]
+
+org_scalar = tf.summary.scalar
+org_image = tf.summary.image
+org_text = tf.summary.text
+org_graph = tf.summary.graph
 
 
 def patch_tensorflow(run, base_namespace):
@@ -36,6 +41,12 @@ def patch_tensorflow(run, base_namespace):
     if not _integrated_with_tensorflow:
         patch_tensorflow_2x(run, base_namespace)
         _integrated_with_tensorflow = True
+
+
+def disable_tensorflow():
+    global _integrated_with_tensorflow
+    disable()
+    _integrated_with_tensorflow = False
 
 
 def track_scalar(name, data, step=None, description=None, run=None, base_namespace=None):
@@ -81,3 +92,10 @@ def patch_tensorflow_2x(run, base_namespace):
     tf.summary.graph = register_pre_hook(
         original=tf.summary.graph, neptune_hook=track_graph, run=run, base_namespace=base_namespace
     )
+
+
+def disable():
+    tf.summary.scalar = org_scalar
+    tf.summary.image = org_image
+    tf.summary.text = org_text
+    tf.summary.graph = org_graph
