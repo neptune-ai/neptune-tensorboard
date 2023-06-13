@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import contextlib
 import warnings
 from importlib.util import find_spec
 
@@ -27,14 +28,14 @@ if IS_GRAPHLIB_AVAILABLE:
 
 _integrated_with_tensorflow = False
 
-__all__ = ["patch_tensorflow"]
+__all__ = ["patch_tensorflow", "NeptuneTensorflowTracker"]
 
 
 def patch_tensorflow(run, base_namespace):
     global _integrated_with_tensorflow
 
     if not _integrated_with_tensorflow:
-        patch_tensorflow_2x(run, base_namespace)
+        NeptuneTensorflowTracker(run, base_namespace)
         _integrated_with_tensorflow = True
 
 
@@ -68,16 +69,28 @@ def track_graph(graph_data, run=None, base_namespace=None):
         warnings.warn("Skipping model visualization because no tfgraphviz installation was found.")
 
 
-def patch_tensorflow_2x(run, base_namespace):
-    tf.summary.scalar = register_pre_hook(
-        original=tf.summary.scalar, neptune_hook=track_scalar, run=run, base_namespace=base_namespace
-    )
-    tf.summary.image = register_pre_hook(
-        original=tf.summary.image, neptune_hook=track_image, run=run, base_namespace=base_namespace
-    )
-    tf.summary.text = register_pre_hook(
-        original=tf.summary.text, neptune_hook=track_text, run=run, base_namespace=base_namespace
-    )
-    tf.summary.graph = register_pre_hook(
-        original=tf.summary.graph, neptune_hook=track_graph, run=run, base_namespace=base_namespace
-    )
+class NeptuneTensorflowTracker(contextlib.AbstractContextManager):
+    def __init__(self, run, base_namespace):
+        self.org_scalar = tf.summary.scalar
+        self.org_image = tf.summary.image
+        self.org_text = tf.summary.text
+        self.org_graph = tf.summary.graph
+
+        tf.summary.scalar = register_pre_hook(
+            original=tf.summary.scalar, neptune_hook=track_scalar, run=run, base_namespace=base_namespace
+        )
+        tf.summary.image = register_pre_hook(
+            original=tf.summary.image, neptune_hook=track_image, run=run, base_namespace=base_namespace
+        )
+        tf.summary.text = register_pre_hook(
+            original=tf.summary.text, neptune_hook=track_text, run=run, base_namespace=base_namespace
+        )
+        tf.summary.graph = register_pre_hook(
+            original=tf.summary.graph, neptune_hook=track_graph, run=run, base_namespace=base_namespace
+        )
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        tf.summary.scalar = self.org_scalar
+        tf.summary.image = self.org_image
+        tf.summary.text = self.org_text
+        tf.summary.graph = self.org_graph
