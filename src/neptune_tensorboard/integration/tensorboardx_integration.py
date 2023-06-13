@@ -1,3 +1,4 @@
+import contextlib
 import warnings
 from functools import partial
 
@@ -14,9 +15,7 @@ try:
 except ImportError:
     IS_TORCHVIZ_AVAILABLE = False
 
-__all__ = [
-    "patch_tensorboardx",
-]
+__all__ = ["patch_tensorboardx", "NeptuneTensorboardXTracker"]
 
 _integrated_with_tensorboardx = False
 
@@ -25,7 +24,7 @@ def patch_tensorboardx(run, base_namespace):
     global _integrated_with_tensorboardx
 
     if not _integrated_with_tensorboardx:
-        integrate(run, base_namespace)
+        NeptuneTensorboardXTracker(run, base_namespace)
         _integrated_with_tensorboardx = True
 
 
@@ -114,21 +113,45 @@ def track_hparam(
     run[base_namespace]["metrics"] = stringify_unsupported(metric_dict)
 
 
-def integrate(run, base_namespace):
-    register_pre_hook_with_run = partial(register_pre_hook, run=run, base_namespace=base_namespace)
+class NeptuneTensorboardXTracker(contextlib.AbstractContextManager):
+    def __init__(self, run, base_namespace):
+        self.org_add_scalar = SummaryWriter.add_scalar
+        self.org_add_image = SummaryWriter.add_image
+        self.org_add_images = SummaryWriter.add_images
+        self.org_add_figure = SummaryWriter.add_figure
+        self.org_add_text = SummaryWriter.add_text
+        self.org_add_graph = SummaryWriter.add_graph
+        self.org_add_hparams = SummaryWriter.add_hparams
 
-    SummaryWriter.add_scalar = register_pre_hook_with_run(original=SummaryWriter.add_scalar, neptune_hook=track_scalar)
+        register_pre_hook_with_run = partial(register_pre_hook, run=run, base_namespace=base_namespace)
 
-    SummaryWriter.add_image = register_pre_hook_with_run(original=SummaryWriter.add_image, neptune_hook=track_image)
+        SummaryWriter.add_scalar = register_pre_hook_with_run(
+            original=SummaryWriter.add_scalar, neptune_hook=track_scalar
+        )
 
-    SummaryWriter.add_images = register_pre_hook_with_run(original=SummaryWriter.add_images, neptune_hook=track_images)
+        SummaryWriter.add_image = register_pre_hook_with_run(original=SummaryWriter.add_image, neptune_hook=track_image)
 
-    SummaryWriter.add_figure = register_pre_hook_with_run(original=SummaryWriter.add_figure, neptune_hook=track_figure)
+        SummaryWriter.add_images = register_pre_hook_with_run(
+            original=SummaryWriter.add_images, neptune_hook=track_images
+        )
 
-    SummaryWriter.add_text = register_pre_hook_with_run(original=SummaryWriter.add_text, neptune_hook=track_text)
+        SummaryWriter.add_figure = register_pre_hook_with_run(
+            original=SummaryWriter.add_figure, neptune_hook=track_figure
+        )
 
-    SummaryWriter.add_graph = register_pre_hook_with_run(original=SummaryWriter.add_graph, neptune_hook=track_graph)
+        SummaryWriter.add_text = register_pre_hook_with_run(original=SummaryWriter.add_text, neptune_hook=track_text)
 
-    SummaryWriter.add_hparams = register_pre_hook_with_run(
-        original=SummaryWriter.add_hparams, neptune_hook=track_hparam
-    )
+        SummaryWriter.add_graph = register_pre_hook_with_run(original=SummaryWriter.add_graph, neptune_hook=track_graph)
+
+        SummaryWriter.add_hparams = register_pre_hook_with_run(
+            original=SummaryWriter.add_hparams, neptune_hook=track_hparam
+        )
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        SummaryWriter.add_scalar = self.org_add_scalar
+        SummaryWriter.add_image = self.org_add_image
+        SummaryWriter.add_images = self.org_add_images
+        SummaryWriter.add_figure = self.org_add_figure
+        SummaryWriter.add_text = self.org_add_text
+        SummaryWriter.add_graph = self.org_add_graph
+        SummaryWriter.add_hparams = self.org_add_hparams
