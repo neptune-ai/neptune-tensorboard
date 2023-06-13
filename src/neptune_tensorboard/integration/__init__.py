@@ -16,7 +16,9 @@
 
 __all__ = ["enable_tensorboard_logging", "__version__"]
 
+import contextlib
 import warnings
+from importlib.util import find_spec
 
 from pkg_resources import parse_version
 
@@ -31,25 +33,81 @@ try:
 except ModuleNotFoundError:
     IS_TF_AVAILABLE = False
 
-if IS_TF_AVAILABLE:
-    from neptune_tensorboard.integration.tensorflow_integration import patch_tensorflow
+IS_PYT_AVAILABLE = find_spec("torch")
 
-    def integrate_with_tensorflow(run, base_namespace):
+if IS_TF_AVAILABLE:
+    MIN_TF_VERSION = "2.0.0-rc0"
+    from neptune_tensorboard.integration.tensorflow_integration import (
+        NeptuneTensorflowTracker,
+        patch_tensorflow,
+    )
+
+    def check_tf_version():
         version = "<unknown>"
         try:
             # noinspection PyUnresolvedReferences
             version = parse_version(tf.version.VERSION)
 
-            if version >= parse_version("2.0.0-rc0"):
-                patch_tensorflow(run, base_namespace)
+            if version >= parse_version(MIN_TF_VERSION):
+                return
         except AttributeError:
             message = "Unrecognized tensorflow version: {}. Please make sure " "that the tensorflow version is >=2.0"
             raise Exception(message.format(version))
 
 
+if IS_PYT_AVAILABLE:
+    MIN_PT_VERSION = "1.9.0"
+    import torch
+
+    from neptune_tensorboard.integration.pytorch_integration import (
+        NeptunePytorchTracker,
+        patch_pytorch,
+    )
+
+    def check_pytorch_version():
+        version = "<unknown>"
+        try:
+            # noinspection PyUnresolvedReferences
+            version = parse_version(torch.__version__)
+
+            if version >= parse_version(MIN_PT_VERSION):
+                return
+        except AttributeError:
+            message = "Unrecognized PyTorch version: {}. Please make sure " "that the PyTorch version is >=1.9.0"
+            raise Exception(message.format(version))
+
+
+FRAMEWORK_NOT_FOUND_WARNING_MSG = (
+    "neptune-tensorboard: Tensorflow or PyTorch was not found, ",
+    "please ensure that it is available.",
+)
+
+
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
     if IS_TF_AVAILABLE:
-        integrate_with_tensorflow(run, base_namespace)
-    else:
-        msg = "neptune-tensorboard: Tensorflow was not found, please ensure that it is available."
-        warnings.warn(msg)
+        check_tf_version()
+        patch_tensorflow(run, base_namespace)
+    if IS_PYT_AVAILABLE:
+        check_pytorch_version()
+        patch_pytorch(run, base_namespace)
+
+    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
+        warnings.warn(FRAMEWORK_NOT_FOUND_WARNING_MSG)
+
+
+@contextlib.contextmanager
+def enable_tensorboard_logging_ctx(run, *, base_namespace="tensorboard"):
+    tf_tracker, pt_tracker = contextlib.nullcontext(), contextlib.nullcontext()
+    if IS_TF_AVAILABLE:
+        check_tf_version()
+        tf_tracker = NeptuneTensorflowTracker(run, base_namespace)
+
+    if IS_PYT_AVAILABLE:
+        check_pytorch_version()
+        pt_tracker = NeptunePytorchTracker(run, base_namespace)
+
+    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
+        warnings.warn(FRAMEWORK_NOT_FOUND_WARNING_MSG)
+
+    with pt_tracker, tf_tracker:
+        yield

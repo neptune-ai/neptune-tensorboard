@@ -1,3 +1,8 @@
+## (UNRELEASED) neptune-tensorboard 1.0.0.pre1
+
+### Changes
+- Update integration to work with PyTorch's SummaryWriter ([#55](https://github.com/neptune-ai/neptune-tensorboard/pull/55))
+
 ## neptune-tensorboard 1.0.0.pre0
 
 ### Changes
