@@ -1,52 +1,15 @@
-from __future__ import print_function
-
+import hashlib
 import os
 import traceback
 
+import click
 import neptune
-from future.moves import sys
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 try:
     import tbparse
 except ModuleNotFoundError:
     raise ModuleNotFoundError("neptune-tensorboard: require `tbparse` for exporting logs (pip install tbparse)")
-
-_EVENTS_FILE_PREFIX = "events.out.tfevents."
-
-
-def parse_path_to_experiment_name(path):
-    """
-    Parses a relative path to tensorflow event file to a reasonable neptune-compatible name
-    Arguments:
-        path(str): a path relative to entrypoint directory
-    Returns: a string representing sanitized project name based on the path, or "untitled-tensorboard" if name cannot
-        be determined
-    """
-    experiment_name = os.path.dirname(path)
-    if experiment_name:
-        return experiment_name
-    else:
-        return "untitled-tensorboard"
-
-
-def parse_path_to_hostname(path):
-    """
-    Parses a relative path to tensorflow event file to a hostname
-    Arguments:
-        path(str): a path relative to entrypoint directory
-    Returns: a hostname or None if the file name did not match tensorflow events file
-    """
-    file_name = os.path.basename(path)
-    if file_name.startswith(_EVENTS_FILE_PREFIX):
-        timestamp_and_hostname = file_name[len(_EVENTS_FILE_PREFIX) :]
-        separator_index = timestamp_and_hostname.find(".")
-        if separator_index >= 0:
-            return timestamp_and_hostname[(separator_index + 1) :]
-        else:
-            return None
-    else:
-        return None
 
 
 class DataSync(object):
@@ -55,12 +18,17 @@ class DataSync(object):
         self._path = path
 
     def run(self):
+        # Inspect if files correspond to EventFiles.
         for root, _, run_files in os.walk(self._path):
             for run_file in run_files:
                 try:
-                    self._export_to_neptune_run(os.path.join(root, run_file))
+                    path = os.path.join(root, run_file)
+                    # Skip if not a valid file
+                    if not self._is_valid_tf_event_file(path):
+                        continue
+                    self._export_to_neptune_run(path)
                 except Exception as e:
-                    print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
+                    click.echo("Cannot load run from file '{}'. ".format(run_file) + "Error: " + str(e))
                     try:
                         traceback.print_exc(e)
                     except:  # noqa: E722
@@ -75,17 +43,29 @@ class DataSync(object):
             return False
         return True
 
+    def _experiment_exists(self, has_run_id, run_path):
+        runs_table = neptune.init_project(project=self._project)
+        runs_df = runs_table.fetch_runs_table(tag=[has_run_id]).to_pandas()
+        if len(runs_df) >= 1:
+            return True
+
+        return False
+
     def _export_to_neptune_run(self, path):
-        if not self._is_valid_tf_event_file(path):
+        # custom_run_id supports str with max length of 32.
+        hash_run_id = hashlib.md5(path.encode()).hexdigest()
+
+        exists = self._experiment_exists(hash_run_id, self._project)
+        if exists:
+            click.echo(f"{path} was already synced")
             return
 
-        run_path = os.path.relpath(path, self._path)
-
-        run = neptune.init_run(project=self._project)
-        run["tensorboard_path"] = run_path
+        run = neptune.init_run(custom_run_id=hash_run_id, project=self._project, tags=[hash_run_id])
+        run["tensorboard_path"] = path
 
         namespace_handler = run["tensorboard"]
 
+        # parse events file
         reader = tbparse.SummaryReader(path)
 
         # Read scalars
@@ -103,3 +83,5 @@ class DataSync(object):
         # Read hparams
         for hparam in reader.hparams.itertuples():
             namespace_handler["hparams"][hparam.tag].append(hparam.value)
+
+        click.echo(f"{path} was exported with run_id: {hash_run_id}")
