@@ -1,18 +1,16 @@
 from __future__ import print_function
 
-import io
 import os
-import re
 import traceback
 
 import neptune
 from future.moves import sys
-from PIL import Image
-from tensorboard.backend.event_processing.event_accumulator import (
-    IMAGES,
-    SCALARS,
-    EventAccumulator,
-)
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+
+try:
+    import tbparse
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("neptune-tensorboard: require `tbparse` for exporting logs (pip install tbparse)")
 
 _EVENTS_FILE_PREFIX = "events.out.tfevents."
 
@@ -60,7 +58,7 @@ class DataSync(object):
         for root, _, run_files in os.walk(self._path):
             for run_file in run_files:
                 try:
-                    self._load_single_run(os.path.join(root, run_file))
+                    self._export_to_neptune_run(os.path.join(root, run_file))
                 except Exception as e:
                     print("Cannot load run from file '{}'. ".format(run_file) + str(e), file=sys.stderr)
                     try:
@@ -68,7 +66,7 @@ class DataSync(object):
                     except:  # noqa: E722
                         pass
 
-    def _does_file_describe_experiment_run(self, path):
+    def _is_valid_tf_event_file(self, path):
         accumulator = EventAccumulator(path)
         accumulator.Reload()
         try:
@@ -77,58 +75,31 @@ class DataSync(object):
             return False
         return True
 
-    def _load_single_run(self, path):
+    def _export_to_neptune_run(self, path):
+        if not self._is_valid_tf_event_file(path):
+            return
+
         run_path = os.path.relpath(path, self._path)
-        run_id = re.sub(r"[^0-9A-Za-z_\-]", "_", run_path).lower()
 
-        run = neptune.init_run(with_id=run_id, project=self._project, mode="debug")
-        accumulator = EventAccumulator(path)
-        self._load_single_file(accumulator, run["tensorboard"])
-        # if not self._experiment_exists(run_id, exp_name):
-        #     if not self._does_file_describe_experiment_run(path):
-        #         return
-        #     with self._project.create_experiment(
-        #         name=exp_name,
-        #         properties={"tf/run/path": run_path},
-        #         tags=[run_id],
-        #         upload_source_files=[],
-        #         abort_callback=lambda *args: None,
-        #         upload_stdout=False,
-        #         upload_stderr=False,
-        #         send_hardware_metrics=False,
-        #         run_monitoring_thread=False,
-        #         handle_uncaught_exceptions=True,
-        #         hostname=hostname or None,
-        #     ) as exp:
-        #         click.echo("Loading {}...".format(path))
-        #         accumulator = self._new_accumulator(path, exp)
-        #         tf_integrator = TensorflowIntegrator(False, lambda *args: exp)
-        #         self._load_single_file(accumulator, tf_integrator)
-        #     click.echo("{} was saved as {}".format(run_path, exp.id))
-        # else:
-        #     click.echo("{} is already synced".format(run_path))
+        run = neptune.init_run(project=self._project)
+        run["tensorboard_path"] = run_path
 
-    @staticmethod
-    def _load_single_file(accumulator, run):
+        namespace_handler = run["tensorboard"]
 
-        accumulator.Reload()
+        reader = tbparse.SummaryReader(path)
 
-        tags = accumulator.Tags()
+        # Read scalars
+        for scalar in reader.scalars.itertuples():
+            namespace_handler["scalar"][scalar.tag].append(scalar.value)
 
-        print(tags)
-        # load scalars
-        for tag in tags[SCALARS]:
-            for event in accumulator.Scalars(tag):
-                run["scalar"][tag].append(event.value)
+        # Read images (and figures)
+        for image in reader.images.itertuples():
+            namespace_handler["image"][image.tag].append(neptune.types.File.as_image(image.value))
 
-        # load images (corresponds to image, images, figure)
-        for tag in tags[IMAGES]:
-            for event in accumulator.Images(tag):
-                img = Image.open(io.BytesIO(event.encoded_image_string))
-                run["image"][tag].append(img)
+        # Read text
+        for text in reader.text.itertuples():
+            namespace_handler["text"][text.tag].append(text.value)
 
-        # load tensors (text is stored as tensor with string dtype)
-        # for tag in tags[TENSORS]:
-        #     for event in accumulator.Tensors(tag):
-        #         if event.tensor_proto.dtype == tf.string:
-        #             run["text"][tag] = event.tensor_proto.string_val
+        # Read hparams
+        for hparam in reader.hparams.itertuples():
+            namespace_handler["hparams"][hparam.tag].append(hparam.value)
