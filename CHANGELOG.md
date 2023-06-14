@@ -1,4 +1,4 @@
-## (UNRELEASED) neptune-tensorboard 1.0.0.pre2
+## neptune-tensorboard 1.0.0.pre2
 
 ### Changes
 - Update integration to work with tensorboardX's SummaryWriter ([#56](https://github.com/neptune-ai/neptune-tensorboard/pull/56))
