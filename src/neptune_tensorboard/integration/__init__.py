@@ -16,8 +16,11 @@
 
 __all__ = ["enable_tensorboard_logging", "__version__"]
 
-import contextlib
 import warnings
+from contextlib import (
+    contextmanager,
+    nullcontext,
+)
 from importlib.util import find_spec
 
 from pkg_resources import parse_version
@@ -34,6 +37,7 @@ except ModuleNotFoundError:
     IS_TF_AVAILABLE = False
 
 IS_PYT_AVAILABLE = find_spec("torch")
+IS_TENSORBOARDX_AVAILABLE = find_spec("tensorboardX")
 
 if IS_TF_AVAILABLE:
     MIN_TF_VERSION = "2.0.0-rc0"
@@ -51,8 +55,11 @@ if IS_TF_AVAILABLE:
             if version >= parse_version(MIN_TF_VERSION):
                 return
         except AttributeError:
-            message = "Unrecognized tensorflow version: {}. Please make sure " "that the tensorflow version is >=2.0"
-            raise Exception(message.format(version))
+            message = (
+                f"Unrecognized tensorflow version: {version}. Please make sure "
+                "that the tensorflow version is >={MIN_TF_VERSION}"
+            )
+            raise Exception(message)
 
 
 if IS_PYT_AVAILABLE:
@@ -73,12 +80,40 @@ if IS_PYT_AVAILABLE:
             if version >= parse_version(MIN_PT_VERSION):
                 return
         except AttributeError:
-            message = "Unrecognized PyTorch version: {}. Please make sure " "that the PyTorch version is >=1.9.0"
-            raise Exception(message.format(version))
+            message = (
+                f"Unrecognized PyTorch version: {version}. Please make sure "
+                "that the PyTorch version is >={MIN_PT_VERSION}"
+            )
+            raise Exception(message)
+
+
+if IS_TENSORBOARDX_AVAILABLE:
+    import tensorboardX
+
+    MIN_TBX_VERSION = "2.2.0"
+    from neptune_tensorboard.integration.tensorboardx_integration import (
+        NeptuneTensorboardXTracker,
+        patch_tensorboardx,
+    )
+
+    def check_tensorboardx_version():
+        version = "<unknown>"
+        try:
+            # noinspection PyUnresolvedReferences
+            version = parse_version(tensorboardX.__version__)
+
+            if version >= parse_version(MIN_TBX_VERSION):
+                return
+        except AttributeError:
+            message = (
+                f"Unrecognized tensorboardX version: {version}. Please make sure "
+                "that the tensorboardX version is >={MIN_TBX_VERSION}"
+            )
+            raise Exception(message)
 
 
 FRAMEWORK_NOT_FOUND_WARNING_MSG = (
-    "neptune-tensorboard: Tensorflow or PyTorch was not found, ",
+    "neptune-tensorboard: Tensorflow or PyTorch or tensorboardX was not found, ",
     "please ensure that it is available.",
 )
 
@@ -90,14 +125,17 @@ def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
     if IS_PYT_AVAILABLE:
         check_pytorch_version()
         patch_pytorch(run, base_namespace)
+    if IS_TENSORBOARDX_AVAILABLE:
+        check_tensorboardx_version()
+        patch_tensorboardx(run, base_namespace)
 
-    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
+    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE or IS_TENSORBOARDX_AVAILABLE):
         warnings.warn(FRAMEWORK_NOT_FOUND_WARNING_MSG)
 
 
-@contextlib.contextmanager
+@contextmanager
 def enable_tensorboard_logging_ctx(run, *, base_namespace="tensorboard"):
-    tf_tracker, pt_tracker = contextlib.nullcontext(), contextlib.nullcontext()
+    tf_tracker, pt_tracker, tbx_tracker = nullcontext(), nullcontext(), nullcontext()
     if IS_TF_AVAILABLE:
         check_tf_version()
         tf_tracker = NeptuneTensorflowTracker(run, base_namespace)
@@ -106,8 +144,12 @@ def enable_tensorboard_logging_ctx(run, *, base_namespace="tensorboard"):
         check_pytorch_version()
         pt_tracker = NeptunePytorchTracker(run, base_namespace)
 
-    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE):
+    if IS_TENSORBOARDX_AVAILABLE:
+        check_tensorboardx_version()
+        tbx_tracker = NeptuneTensorboardXTracker(run, base_namespace)
+
+    if not (IS_PYT_AVAILABLE or IS_TF_AVAILABLE or IS_TENSORBOARDX_AVAILABLE):
         warnings.warn(FRAMEWORK_NOT_FOUND_WARNING_MSG)
 
-    with pt_tracker, tf_tracker:
+    with pt_tracker, tf_tracker, tbx_tracker:
         yield
