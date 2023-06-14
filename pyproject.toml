@@ -99,3 +99,6 @@ force_grid_wrap = 2
 [tool.flake8]
 max-line-length = 120
 extend-ignore = "E203"
+
+[tool.poetry.plugins."neptune.plugins"]
+"tensorboard" = "neptune_tensorboard_plugin:sync"
