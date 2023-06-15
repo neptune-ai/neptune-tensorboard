@@ -13,8 +13,9 @@ except ModuleNotFoundError:
 
 
 class DataSync(object):
-    def __init__(self, project, path):
+    def __init__(self, project, api_token, path):
         self._project = project
+        self._api_token = api_token
         self._path = path
 
     def run(self):
@@ -43,13 +44,21 @@ class DataSync(object):
             return False
         return True
 
-    def _experiment_exists(self, has_run_id, run_path):
-        runs_table = neptune.init_project(project=self._project)
-        runs_df = runs_table.fetch_runs_table(tag=[has_run_id]).to_pandas()
-        if len(runs_df) >= 1:
-            return True
+    def _get_existing_neptune_run_ids(self):
+        with neptune.init_project(project=self._project, api_token=self._api_token) as project:
+            try:
+                existing_neptune_run_ids = {
+                    run_id for run_id in project.fetch_runs_table().to_pandas()["sys/custom_run_id"].to_list()
+                }
+            except KeyError:
+                # empty project
+                existing_neptune_run_ids = set()
 
-        return False
+            return existing_neptune_run_ids
+
+    def _experiment_exists(self, hash_run_id, run_path):
+        existing_custom_ids = self._get_existing_neptune_run_ids()
+        return hash_run_id in existing_custom_ids
 
     def _export_to_neptune_run(self, path):
         # custom_run_id supports str with max length of 32.
@@ -60,28 +69,31 @@ class DataSync(object):
             click.echo(f"{path} was already synced")
             return
 
-        run = neptune.init_run(custom_run_id=hash_run_id, project=self._project, tags=[hash_run_id])
-        run["tensorboard_path"] = path
+        run = neptune.init_run(custom_run_id=hash_run_id, project=self._project, api_token=self._api_token)
+        with run:
+            run["tensorboard_path"] = path
 
-        namespace_handler = run["tensorboard"]
+            namespace_handler = run["tensorboard"]
 
-        # parse events file
-        reader = tbparse.SummaryReader(path)
+            # parse events file
+            reader = tbparse.SummaryReader(path)
 
-        # Read scalars
-        for scalar in reader.scalars.itertuples():
-            namespace_handler["scalar"][scalar.tag].append(scalar.value)
+            # Read scalars
+            print(reader.scalars)
+            for scalar in reader.scalars.itertuples():
+                namespace_handler["scalar"][scalar.tag].append(scalar.value)
 
-        # Read images (and figures)
-        for image in reader.images.itertuples():
-            namespace_handler["image"][image.tag].append(neptune.types.File.as_image(image.value))
+            # Read images (and figures)
+            print(reader.images)
+            for image in reader.images.itertuples():
+                namespace_handler["image"][image.tag].append(neptune.types.File.as_image(image.value))
 
-        # Read text
-        for text in reader.text.itertuples():
-            namespace_handler["text"][text.tag].append(text.value)
+            # Read text
+            for text in reader.text.itertuples():
+                namespace_handler["text"][text.tag].append(text.value)
 
-        # Read hparams
-        for hparam in reader.hparams.itertuples():
-            namespace_handler["hparams"][hparam.tag].append(hparam.value)
+            # Read hparams
+            for hparam in reader.hparams.itertuples():
+                namespace_handler["hparams"][hparam.tag].append(hparam.value)
 
-        click.echo(f"{path} was exported with run_id: {hash_run_id}")
+            click.echo(f"{path} was exported with run_id: {hash_run_id}")
