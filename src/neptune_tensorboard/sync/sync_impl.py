@@ -79,12 +79,10 @@ class DataSync(object):
             reader = tbparse.SummaryReader(path)
 
             # Read scalars
-            print(reader.scalars)
             for scalar in reader.scalars.itertuples():
                 namespace_handler["scalar"][scalar.tag].append(scalar.value)
 
             # Read images (and figures)
-            print(reader.images)
             for image in reader.images.itertuples():
                 namespace_handler["image"][image.tag].append(neptune.types.File.as_image(image.value))
 
