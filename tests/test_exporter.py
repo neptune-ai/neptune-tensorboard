@@ -23,7 +23,7 @@ def test_exporter():
     writer.flush()
     writer.close()
 
-    DataSync(project=None, path=log_dir).run()
+    DataSync(project=None, api_token=None, path=log_dir).run()
 
     for fname in os.listdir(log_dir):
         path = os.path.join(log_dir, fname)
