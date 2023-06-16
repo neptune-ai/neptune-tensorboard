@@ -1,5 +1,5 @@
 import hashlib
-import os
+import pathlib
 import traceback
 
 import click
@@ -27,19 +27,21 @@ class DataSync:
         #       we cache the custom_run_ids here.
         self._existing_custom_run_ids = self._get_existing_neptune_custom_run_ids()
         # Inspect if files correspond to EventFiles.
-        for root, _, run_files in os.walk(self._path):
-            for run_file in run_files:
+        for path in pathlib.Path(self._path).glob("**/*tfevents*"):
+            try:
+                # methods below expect path to be str.
+                str_path = str(path)
+
+                # only try export for valid files i.e. files which EventAccumulator
+                # can actually read.
+                if self._is_valid_tf_event_file(str_path):
+                    self._export_to_neptune_run(str_path)
+            except Exception as e:
+                click.echo("Cannot load run from file '{}'. ".format(path) + "Error: " + str(e))
                 try:
-                    path = os.path.join(root, run_file)
-                    # only try export for valid files.
-                    if self._is_valid_tf_event_file(path):
-                        self._export_to_neptune_run(path)
-                except Exception as e:
-                    click.echo("Cannot load run from file '{}'. ".format(run_file) + "Error: " + str(e))
-                    try:
-                        traceback.print_exc(e)
-                    except:  # noqa: E722
-                        pass
+                    traceback.print_exc(e)
+                except:  # noqa: E722
+                    pass
 
     def _is_valid_tf_event_file(self, path):
         accumulator = EventAccumulator(path)
