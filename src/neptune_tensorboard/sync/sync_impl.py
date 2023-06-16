@@ -12,22 +12,28 @@ except ModuleNotFoundError:
     raise ModuleNotFoundError("neptune-tensorboard: require `tbparse` for exporting logs (pip install tbparse)")
 
 
-class DataSync(object):
+def compute_md5_hash(path):
+    return hashlib.md5(path.encode()).hexdigest()
+
+
+class DataSync:
     def __init__(self, project, api_token, path):
         self._project = project
         self._api_token = api_token
         self._path = path
 
     def run(self):
+        # NOTE: Fetching custom_run_ids is not a trivial operation, so
+        #       we cache the custom_run_ids here.
+        self._existing_custom_run_ids = self._get_existing_neptune_custom_run_ids()
         # Inspect if files correspond to EventFiles.
         for root, _, run_files in os.walk(self._path):
             for run_file in run_files:
                 try:
                     path = os.path.join(root, run_file)
-                    # Skip if not a valid file
-                    if not self._is_valid_tf_event_file(path):
-                        continue
-                    self._export_to_neptune_run(path)
+                    # only try export for valid files.
+                    if self._is_valid_tf_event_file(path):
+                        self._export_to_neptune_run(path)
                 except Exception as e:
                     click.echo("Cannot load run from file '{}'. ".format(run_file) + "Error: " + str(e))
                     try:
@@ -44,33 +50,26 @@ class DataSync(object):
             return False
         return True
 
-    def _get_existing_neptune_run_ids(self):
+    def _get_existing_neptune_custom_run_ids(self):
         with neptune.init_project(project=self._project, api_token=self._api_token) as project:
             try:
-                existing_neptune_run_ids = {
-                    run_id for run_id in project.fetch_runs_table().to_pandas()["sys/custom_run_id"].to_list()
-                }
+                return {run_id for run_id in project.fetch_runs_table().to_pandas()["sys/custom_run_id"].to_list()}
             except KeyError:
                 # empty project
-                existing_neptune_run_ids = set()
-
-            return existing_neptune_run_ids
+                return set()
 
     def _experiment_exists(self, hash_run_id, run_path):
-        existing_custom_ids = self._get_existing_neptune_run_ids()
-        return hash_run_id in existing_custom_ids
+        return hash_run_id in self._existing_custom_run_ids
 
     def _export_to_neptune_run(self, path):
         # custom_run_id supports str with max length of 32.
-        hash_run_id = hashlib.md5(path.encode()).hexdigest()
+        hash_run_id = compute_md5_hash(path)
 
-        exists = self._experiment_exists(hash_run_id, self._project)
-        if exists:
+        if self._experiment_exists(hash_run_id, self._project):
             click.echo(f"{path} was already synced")
             return
 
-        run = neptune.init_run(custom_run_id=hash_run_id, project=self._project, api_token=self._api_token)
-        with run:
+        with neptune.init_run(custom_run_id=hash_run_id, project=self._project, api_token=self._api_token) as run:
             run["tensorboard_path"] = path
 
             namespace_handler = run["tensorboard"]
