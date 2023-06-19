@@ -73,6 +73,7 @@ def track_images(
     elif dataformats == "NHWC":
         pass
     else:
+        # user facing
         warnings.warn("neptune-tensorboard: Skipping logging images as  {dataformats} is not supported.")
 
     for idx in range(img_tensor.shape[0]):
@@ -93,10 +94,12 @@ def track_graph(
     summary_writer, model, input_to_model=None, verbose=False, use_strict_trace=True, run=None, base_namespace=None
 ):
     if not IS_TORCHVIZ_AVAILABLE:
+        # user facing
         msg = "neptune-tensorboard: Skipping model visualization because no torchviz installation was found."
         warnings.warn(msg)
         return
     if input_to_model is None:
+        # user facing
         msg = "neptune-tensorboard: Skipping model visualization because input_to_model was None."
         warnings.warn(msg)
         return
