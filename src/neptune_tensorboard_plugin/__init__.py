@@ -9,6 +9,7 @@ import click
 @click.argument("log_dir", required=True)
 def sync(project, api_token, log_dir):
     if not os.path.exists(log_dir):
+        # user facing
         click.echo("ERROR: Provided `log_dir` path doesn't exist", err=True)
         return
 
