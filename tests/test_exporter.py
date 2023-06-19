@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import uuid
+import time
 
 import neptune
 import torch
@@ -24,6 +25,10 @@ def test_exporter():
     writer.close()
 
     DataSync(project=None, api_token=None, path=log_dir).run()
+
+    # let the data sync (we can't call run.sync() as we don't have
+    # access to run)
+    time.sleep(10)
 
     for fname in os.listdir(log_dir):
         path = os.path.join(log_dir, fname)
