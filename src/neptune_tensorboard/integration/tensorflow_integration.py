@@ -66,7 +66,8 @@ def track_graph(graph_data, run=None, base_namespace=None):
         # There is only one graph
         run[base_namespace]["graph"].upload(File.from_content(png_bytes, extension="png"))
     else:
-        warnings.warn("Skipping model visualization because no tfgraphviz installation was found.")
+        # user facing
+        warnings.warn("neptune-tensorboard: Skipping model visualization because no tfgraphviz installation was found.")
 
 
 class NeptuneTensorflowTracker(contextlib.AbstractContextManager):

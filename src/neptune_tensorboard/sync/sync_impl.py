@@ -9,7 +9,8 @@ from tensorboard.backend.event_processing.event_accumulator import EventAccumula
 try:
     import tbparse
 except ModuleNotFoundError:
-    raise ModuleNotFoundError("neptune-tensorboard: require `tbparse` for exporting logs (pip install tbparse)")
+    # user facing
+    raise ModuleNotFoundError("neptune-tensorboard: tbparse is required for exporting logs. Install it with: pip install tbparse")
 
 
 def compute_md5_hash(path):
@@ -37,6 +38,7 @@ class DataSync:
                 if self._is_valid_tf_event_file(str_path):
                     self._export_to_neptune_run(str_path)
             except Exception as e:
+                # user facing
                 click.echo("Cannot load run from file '{}'. ".format(path) + "Error: " + str(e))
                 try:
                     traceback.print_exc(e)
@@ -68,7 +70,8 @@ class DataSync:
         hash_run_id = compute_md5_hash(path)
 
         if self._experiment_exists(hash_run_id, self._project):
-            click.echo(f"{path} was already synced")
+            # user facing
+            click.echo(f"{path} was already synchronized")
             return
 
         with neptune.init_run(custom_run_id=hash_run_id, project=self._project, api_token=self._api_token) as run:
@@ -95,4 +98,5 @@ class DataSync:
             for hparam in reader.hparams.itertuples():
                 namespace_handler["hparams"][hparam.tag].append(hparam.value)
 
+            # user facing
             click.echo(f"{path} was exported with run_id: {hash_run_id}")

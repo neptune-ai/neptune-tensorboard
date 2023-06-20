@@ -15,6 +15,7 @@ else:
     )
 
 if not (find_spec("neptune") or find_spec("neptune-client")):
+    # user facing
     msg = """
             The Neptune client library was not found.
 

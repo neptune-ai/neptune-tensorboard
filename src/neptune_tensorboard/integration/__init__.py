@@ -55,9 +55,10 @@ if IS_TF_AVAILABLE:
             if version >= parse_version(MIN_TF_VERSION):
                 return
         except AttributeError:
+            # user facing
             message = (
-                f"Unrecognized tensorflow version: {version}. Please make sure "
-                "that the tensorflow version is >={MIN_TF_VERSION}"
+                f"Unrecognized TensorFlow version: {version}. Please make sure "
+                "that the TensorFlow version is >={MIN_TF_VERSION}"
             )
             raise Exception(message)
 
@@ -80,6 +81,7 @@ if IS_PYT_AVAILABLE:
             if version >= parse_version(MIN_PT_VERSION):
                 return
         except AttributeError:
+            # user facing
             message = (
                 f"Unrecognized PyTorch version: {version}. Please make sure "
                 "that the PyTorch version is >={MIN_PT_VERSION}"
@@ -105,6 +107,7 @@ if IS_TENSORBOARDX_AVAILABLE:
             if version >= parse_version(MIN_TBX_VERSION):
                 return
         except AttributeError:
+            # user facing
             message = (
                 f"Unrecognized tensorboardX version: {version}. Please make sure "
                 "that the tensorboardX version is >={MIN_TBX_VERSION}"
@@ -112,8 +115,9 @@ if IS_TENSORBOARDX_AVAILABLE:
             raise Exception(message)
 
 
+# user facing
 FRAMEWORK_NOT_FOUND_WARNING_MSG = (
-    "neptune-tensorboard: Tensorflow or PyTorch or tensorboardX was not found, ",
+    "neptune-tensorboard: TensorFlow or PyTorch or tensorboardX was not found, ",
     "please ensure that it is available.",
 )
 
