@@ -1,3 +1,8 @@
+## neptune-tensorboard 1.0.0.pre4
+
+### Fixes
+- Export neptune plug-in correctly ([#62](https://github.com/neptune-ai/neptune-tensorboard/pull/62))
+
 ## neptune-tensorboard 1.0.0.pre3
 
 ### Changes

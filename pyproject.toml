@@ -71,6 +71,7 @@ keywords = [
 ]
 packages = [
     { include = "neptune_tensorboard", from = "src" },
+    { include = "neptune_tensorboard_plugin", from = "src" },
 ]
 
 [tool.poetry.urls]
