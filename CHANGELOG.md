@@ -1,4 +1,4 @@
-## (UNRELEASED) neptune-tensorboard 1.0.0.pre3
+## neptune-tensorboard 1.0.0.pre3
 
 ### Changes
 - Add support to export existing Tensorboard logs via CLI plugin ([#59](https://github.com/neptune-ai/neptune-tensorboard/pull/59/))
