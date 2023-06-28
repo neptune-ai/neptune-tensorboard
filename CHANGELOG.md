@@ -1,3 +1,14 @@
+## neptune-tensorboard 1.0.0
+
+### Fixes
+- Export neptune plug-in correctly ([#62](https://github.com/neptune-ai/neptune-tensorboard/pull/62))
+
+### Changes
+- Add support to export existing Tensorboard logs via CLI plugin ([#59](https://github.com/neptune-ai/neptune-tensorboard/pull/59/))
+- Update integration to work with tensorboardX's SummaryWriter ([#56](https://github.com/neptune-ai/neptune-tensorboard/pull/56))
+- Update integration to work with PyTorch's SummaryWriter ([#55](https://github.com/neptune-ai/neptune-tensorboard/pull/55))
+- Update integration to work with latest `neptune` client and update the meta-data logging structure ([#51](https://github.com/neptune-ai/neptune-tensorboard/pull/51))
+
 ## neptune-tensorboard 1.0.0.pre4
 
 ### Fixes
