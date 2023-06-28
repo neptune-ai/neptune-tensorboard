@@ -10,7 +10,9 @@ try:
     import tbparse
 except ModuleNotFoundError:
     # user facing
-    raise ModuleNotFoundError("neptune-tensorboard: tbparse is required for exporting logs. Install it with: pip install tbparse")
+    raise ModuleNotFoundError(
+        "neptune-tensorboard: tbparse is required for exporting logs. Install it with: pip install tbparse"
+    )
 
 
 def compute_md5_hash(path):
@@ -74,7 +76,9 @@ class DataSync:
             click.echo(f"{path} was already synchronized")
             return
 
-        with neptune.init_run(custom_run_id=hash_run_id, project=self._project, api_token=self._api_token) as run:
+        with neptune.init_run(
+            custom_run_id=hash_run_id, project=self._project, api_token=self._api_token, capture_hardware_metrics=False
+        ) as run:
             run["tensorboard_path"] = path
 
             namespace_handler = run["tensorboard"]
