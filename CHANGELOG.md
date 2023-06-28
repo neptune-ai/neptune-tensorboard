@@ -2,6 +2,7 @@
 
 ### Fixes
 - Export neptune plug-in correctly ([#62](https://github.com/neptune-ai/neptune-tensorboard/pull/62))
+- Disable capturing of hardware metrics ([#63](https://github.com/neptune-ai/neptune-tensorboard/pull/63))
 
 ### Changes
 - Add support to export existing Tensorboard logs via CLI plugin ([#59](https://github.com/neptune-ai/neptune-tensorboard/pull/59/))
