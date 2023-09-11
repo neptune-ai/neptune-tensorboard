@@ -123,6 +123,22 @@ FRAMEWORK_NOT_FOUND_WARNING_MSG = (
 
 
 def enable_tensorboard_logging(run, *, base_namespace="tensorboard"):
+    """Logs the tracked metadata to both the tensorboard directory and a Neptune run.
+
+    Args:
+        run: An existing run reference, as returned by `neptune.init_run()`.
+        base_namespace: Namespace under which all metadata logged by the integration will be stored.
+
+    Example:
+        >>> import neptune
+        >>> from neptune_tensorboard import enable_tensorboard_logging
+        >>> run = neptune.init_run()
+        >>> enable_tensorboard_logging(run)
+
+    Learn more in the Neptune docs:
+    - Integration guide: https://docs.neptune.ai/integrations/tensorboard/
+    - API reference: https://docs.neptune.ai/api/integrations/tensorboard/
+    """
     if IS_TF_AVAILABLE:
         check_tf_version()
         patch_tensorflow(run, base_namespace)
