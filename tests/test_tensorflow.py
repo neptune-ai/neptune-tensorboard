@@ -18,7 +18,14 @@ def test_logging():
             tf.summary.scalar("scalar_tensor", data=tf.constant(0.1), step=1)
 
             # Image
-            tf.summary.image("zeros", data=tf.zeros([3, 2, 2, 3]), step=1)
+            tf.summary.image(
+                "single_image", data=tf.random.uniform(shape=[1, 8, 8, 1]), step=1, description="singe_image_desc"
+            )
+
+            # Images
+            tf.summary.image(
+                "image_series", data=tf.random.uniform(shape=[3, 8, 8, 1]), step=1, description="image_series_desc"
+            )
 
             # Text
             tf.summary.text("some_text", data="Hello World!", step=1)
@@ -35,5 +42,6 @@ def test_logging():
 
             assert run.exists("tensorboard")
             assert run.exists("tensorboard/scalar/learning_rate")
-            assert run.exists("tensorboard/image/zeros")
+            assert run.exists("tensorboard/image/single_image")
+            assert run.exists("tensorboard/image/image_series")
             assert run.exists("tensorboard/text/some_text")
