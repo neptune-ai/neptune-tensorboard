@@ -1,4 +1,4 @@
-## UNRELEASED
+## neptune-tensorboard 1.0.1
 
 ### Fixes
 - Add support for `description` argument in `tf.summary.image()` ([#66](https://github.com/neptune-ai/neptune-tensorboard/pull/66))
