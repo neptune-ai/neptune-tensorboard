@@ -14,17 +14,25 @@ def test_logging():
             file_writer.set_as_default()
 
             # Scalar
-            tf.summary.scalar("learning_rate", data=0.1, step=1)
-            tf.summary.scalar("scalar_tensor", data=tf.constant(0.1), step=1)
+            tf.summary.scalar("learning_rate", data=0.1, step=1, description="test")
+            tf.summary.scalar("scalar_tensor", data=tf.constant(0.1), step=1, description="test")
 
             # Image
             tf.summary.image(
-                "single_image", data=tf.random.uniform(shape=[1, 8, 8, 1]), step=1, description="singe_image_desc"
+                "single_image",
+                data=tf.random.uniform(shape=[1, 8, 8, 1]),
+                step=1,
+                description="singe_image_desc",
+                max_outputs=3
             )
 
             # Images
             tf.summary.image(
-                "image_series", data=tf.random.uniform(shape=[3, 8, 8, 1]), step=1, description="image_series_desc"
+                "image_series",
+                data=tf.random.uniform(shape=[3, 8, 8, 1]),
+                step=1,
+                description="image_series_desc",
+                max_outputs=3
             )
 
             # Text
