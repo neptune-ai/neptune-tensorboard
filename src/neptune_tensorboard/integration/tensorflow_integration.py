@@ -43,16 +43,17 @@ def track_scalar(name, data, step=None, description=None, run=None, base_namespa
     run[base_namespace]["scalar"][name].append(data)
 
 
-def track_image(name, data, step=None, run=None, base_namespace=None):
-    # expecting 2 or 3 dimensional tensor. If tensor is 4-dimentional,
-    # as in https://www.tensorflow.org/api_docs/python/tf/summary/image
-    # iterate over first dimension to send all images
-    shape = tf.shape(data)
-    if len(shape) >= 4:
-        for num in range(0, shape[0]):
-            run[base_namespace]["image"][name].append(File.as_image(data[num]))
+def track_image(name, data, step=None, run=None, base_namespace=None, description=None):
+    # If number of images (tf.shape(data)[0]) > 1, append images as FileSeries, else upload as an image.
+    # ref: https://www.tensorflow.org/api_docs/python/tf/summary/image
+    k = tf.shape(data)[0]
+    if k > 1:
+        for num in range(k):
+            run[base_namespace]["image"][name].append(File.as_image(data[num]), description=description)
     else:
-        run[base_namespace]["image"][name] = File.as_image(data)
+        if description:
+            warnings.warn(f"neptune-tensorboard: Uploading single image ({name}). Description will be ignored.")
+        run[base_namespace]["image"][name] = File.as_image(data[0])
 
 
 def track_text(name, data, step=None, description=None, run=None, base_namespace=None):
