@@ -39,11 +39,11 @@ def patch_tensorflow(run, base_namespace):
         _integrated_with_tensorflow = True
 
 
-def track_scalar(name, data, step=None, description=None, run=None, base_namespace=None):
+def track_scalar(name, data, run=None, base_namespace=None, **kwargs):
     run[base_namespace]["scalar"][name].append(data)
 
 
-def track_image(name, data, step=None, run=None, base_namespace=None, description=None):
+def track_image(name, data, run=None, base_namespace=None, description=None, **kwargs):
     # If number of images (tf.shape(data)[0]) > 1, append images as FileSeries, else upload as an image.
     # ref: https://www.tensorflow.org/api_docs/python/tf/summary/image
     k = tf.shape(data)[0]
@@ -56,7 +56,7 @@ def track_image(name, data, step=None, run=None, base_namespace=None, descriptio
         run[base_namespace]["image"][name] = File.as_image(data[0])
 
 
-def track_text(name, data, step=None, description=None, run=None, base_namespace=None):
+def track_text(name, data, run=None, base_namespace=None, **kwargs):
     run[base_namespace]["text"][name] = data
 
 
