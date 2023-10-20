@@ -1,4 +1,9 @@
-## neptune-tensorboard 1.1.0
+## neptune-tensorboard 1.0.2
+
+### Changes
+- Use **kwargs to handle unused tensorboard arguements ([#68](https://github.com/neptune-ai/neptune-tensorboard/pull/68))
+
+## neptune-tensorboard 1.0.1
 
 ### Changes
 - Add support for `description` argument in `tf.summary.image()` ([#66](https://github.com/neptune-ai/neptune-tensorboard/pull/66))
