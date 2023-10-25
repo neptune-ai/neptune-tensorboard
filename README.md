@@ -1,5 +1,3 @@
-![Neptune and TensorFlow logos](https://neptune.ai/wp-content/uploads/2023/09/tensorboard_tensorflow.svg)
-
 # Neptune-TensorBoard integration
 
 Log TensorBoard-tracked metadata to neptune.ai.
