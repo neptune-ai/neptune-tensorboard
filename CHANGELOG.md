@@ -1,3 +1,9 @@
+## [UNRELEASED] neptune-tensorboard 1.0.3
+
+### Fixes
+- Fix not logging `tensors` events ([#71](https://github.com/neptune-ai/neptune-tensorboard/pull/71))
+
+
 ## neptune-tensorboard 1.0.2
 
 ### Changes
