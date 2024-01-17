@@ -4,6 +4,7 @@ import traceback
 
 import click
 import neptune
+from neptune.utils import stringify_unsupported
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 try:
@@ -101,6 +102,14 @@ class DataSync:
             # Read hparams
             for hparam in reader.hparams.itertuples():
                 namespace_handler["hparams"][hparam.tag].append(hparam.value)
+
+            # Read tensors
+            if hasattr(reader, "tensors"):
+                for tensor in reader.tensors.itertuples():
+                    namespace_handler["tensor"][tensor.tag].append(
+                        stringify_unsupported(tensor.value),
+                        step=tensor.step,
+                    )
 
             # user facing
             click.echo(f"{path} was exported with run_id: {hash_run_id}")
