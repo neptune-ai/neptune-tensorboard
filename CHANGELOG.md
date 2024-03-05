@@ -1,3 +1,9 @@
+## neptune-tensorboard 1.0.3
+
+### Changes
+- Readme updated ([#69](https://github.com/neptune-ai/neptune-tensorboard/pull/69))
+
+
 ## neptune-tensorboard 1.0.2
 
 ### Changes
